@@ -150,6 +150,9 @@ td .sub{font-size:12px;color:var(--muted);margin-top:3px}
 .pl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
 .pl-keep{font-size:13px;font-weight:700}
 .pl-hours{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--muted)}
+.tbl.mini .owner td{border-top:1px dashed var(--line);padding-top:7px}
+.owner-panel{background:#fff}
+.btn.small.ghost{background:transparent;color:var(--muted);border:1px solid var(--line)}
 
 /* 人員 */
 .pp-row{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:12px}
@@ -394,6 +397,19 @@ ownerHours: [
  {id:'oh-2', client_id:'c-maohai',  hours:18},
  {id:'oh-3', client_id:'c-xiaoshu', hours:12}
 ],
+/* 營運固定開銷：不屬於任何單一專案，但確實花掉了。
+   分攤方式用「營收比例」——大客戶佔用的行政與管理資源本來就比較多。 */
+opex: {
+ method:'營收比例',
+ items:[
+  {name:'軟體訂閱',   amount:7000},
+  {name:'會計與雜支', amount:5000},
+  {name:'通訊與水電', amount:3000}
+ ]
+},
+/* 自己的時薪基準，用來換算投入時間的機會成本。不是真的會付這筆錢，
+   但不標價，你就永遠不知道哪個案子在吃你的時間。 */
+settings: { owner_rate: 1200 },
 decisions: [
  {id:'dc-1', client_id:'c-shanlan', decided_on:'2026-11-18', decision:'禮盒改用牛皮紙，不用塑膠內襯', reason:'客戶說要主打環保，塑膠殼與品牌訴求衝突', decided_by:'客戶 王經理', impact:'主視覺要重拍，ct-008 延一週'},
  {id:'dc-2', client_id:'c-shanlan', decided_on:'2026-11-14', decision:'文案拿掉「天然釀造」四個字', reason:'該品項含焦糖色素，法定分類為調理茶，稱釀造違規', decided_by:'我', impact:'所有已排程素材都要掃一次'},
@@ -1080,8 +1096,15 @@ function pageRevenue(){
 /* --- 共用計算 --- */
 const staffOf = id => state.data.staff.find(s=>s.id===id);
 
-/* 單一品牌專案的損益。人員成本用「月費 × 分攤比例」，不用工時——
-   外包是月費制，計時對不上，而且沒人會天天按碼表。 */
+/* 四層成本，一層一層往下扣：
+     直接成本 = 人員分攤 + 廣告 + 按件外包
+     毛利     = 收入 − 直接成本
+     淨利     = 毛利 − 營運分攤          ← 這才是「留下多少」的基準
+     實際     = 淨利 − 我的時間機會成本   ← 預設收合，想看再展開
+   人員成本用「月費 × 分攤比例」不用工時：外包是月費制，計時對不上，
+   而且沒人會天天按碼表。 */
+const opexTotal = () => state.data.opex.items.reduce((a,b)=>a+b.amount,0);
+
 function projectPL(cid){
   const d = state.data;
   const client = d.clients.find(c=>c.id===cid) || {};
@@ -1098,12 +1121,23 @@ function projectPL(cid){
   const adCost    = costs.filter(c=>c.cost_type==='廣告費').reduce((a,b)=>a+b.amount,0);
   const otherCost = costs.filter(c=>c.cost_type!=='廣告費').reduce((a,b)=>a+b.amount,0);
 
-  const total  = peopleCost + adCost + otherCost;
-  const profit = revenue - total;
-  const keep   = revenue ? Math.round(profit / revenue * 1000) / 10 : 0;  // 每 100 元留下
-  const hours  = (d.ownerHours.find(h=>h.client_id===cid)||{}).hours || 0;
+  const direct = peopleCost + adCost + otherCost;
+  const gross  = revenue - direct;
 
-  return { client, revenue, people, peopleCost, adCost, otherCost, costs, total, profit, keep, hours };
+  // 營運分攤：按營收比例攤。大客戶佔用的行政與管理資源本來就比較多。
+  const allRev = d.clients.reduce((a,c)=>a+(c.monthly_fee||0),0);
+  const opex   = allRev ? Math.round(opexTotal() * revenue / allRev) : 0;
+  const net    = gross - opex;
+
+  const hours      = (d.ownerHours.find(h=>h.client_id===cid)||{}).hours || 0;
+  const ownerCost  = hours * (d.settings.owner_rate||0);
+  const withOwner  = net - ownerCost;
+
+  // 「每 100 元留下」用淨利當基準，和「外包、製作、營運和稅」那句話對得上
+  const keep = revenue ? Math.round(net / revenue * 1000) / 10 : 0;
+
+  return { client, revenue, people, peopleCost, adCost, otherCost, costs,
+           direct, gross, opex, net, keep, hours, ownerCost, withOwner };
 }
 
 /* 留存率的警示色：低於 20% 紅、低於 40% 黃 */
@@ -1197,21 +1231,30 @@ function doNudge(itemId){
 /* --- 分頁二：損益 --- */
 function projPL(){
   const d = state.data;
-  const rows = d.clients.map(c=>projPLRow(c.id)).sort((a,b)=>a.keep-b.keep);  // 最虧的排最上面
-  const sum = rows.reduce((a,r)=>({rev:a.rev+r.revenue, cost:a.cost+r.total, hrs:a.hrs+r.hours}),{rev:0,cost:0,hrs:0});
-  const allKeep = sum.rev ? Math.round((sum.rev-sum.cost)/sum.rev*1000)/10 : 0;
+  const rows = d.clients.map(c=>projectPL(c.id)).sort((a,b)=>a.keep-b.keep);  // 最虧的排最上面
+  const s = rows.reduce((a,r)=>({
+    rev:a.rev+r.revenue, direct:a.direct+r.direct, gross:a.gross+r.gross,
+    opex:a.opex+r.opex, net:a.net+r.net, hrs:a.hrs+r.hours,
+    ownerCost:a.ownerCost+r.ownerCost, withOwner:a.withOwner+r.withOwner
+  }),{rev:0,direct:0,gross:0,opex:0,net:0,hrs:0,ownerCost:0,withOwner:0});
+  const allKeep = s.rev ? Math.round(s.net/s.rev*1000)/10 : 0;
+  const showOwner = state.plOwner;
 
   return `
   <div class="stats">
-    <div class="stat"><div class="label">本月總收入</div><div class="val">${fmt(sum.rev)}</div></div>
-    <div class="stat"><div class="label">投入成本</div><div class="val">${fmt(sum.cost)}</div></div>
-    <div class="stat"><div class="label">淨利</div><div class="val">${fmt(sum.rev-sum.cost)}</div></div>
+    <div class="stat"><div class="label">本月總收入</div><div class="val">${fmt(s.rev)}</div></div>
+    <div class="stat"><div class="label">直接成本</div><div class="val">${fmt(s.direct)}</div>
+      <div class="note">人員分攤＋廣告＋按件外包</div></div>
+    <div class="stat"><div class="label">營運分攤</div><div class="val">${fmt(s.opex)}</div>
+      <div class="note">軟體、會計、通訊等固定開銷</div></div>
     <div class="stat"><div class="label">每收進 100 元，留下</div>
       <div class="val txt-${keepTone(allKeep)}">${allKeep} 元</div>
-      <div class="note">你自己的 ${sum.hrs} 小時還沒算進去</div></div>
+      <div class="note">扣完直接成本與營運分攤，未計稅</div></div>
   </div>
+
   <div class="panel">
-    <div class="panel-head"><h3>各專案損益</h3><span class="hint">預設按留存率由低到高——比例低的才是問題，不是金額小的</span></div>
+    <div class="panel-head"><h3>各專案損益</h3>
+      <span class="hint">預設按留存率由低到高——比例低的才是問題，不是金額小的</span></div>
     ${rows.map(r=>`
     <div class="pl-row">
       <div class="pl-head">
@@ -1223,14 +1266,49 @@ function projPL(){
         ${r.people.map(p=>`<tr class="sub"><td>　${esc(p.name)}　${esc(p.role)}　${p.pct}%</td><td class="num">−${fmt(p.cost)}</td></tr>`).join('')}
         ${r.adCost?`<tr class="sub"><td>　廣告費</td><td class="num">−${fmt(r.adCost)}</td></tr>`:''}
         ${r.otherCost?`<tr class="sub"><td>　按件外包</td><td class="num">−${fmt(r.otherCost)}</td></tr>`:''}
-        <tr class="tot"><td>投入成本</td><td class="num">−${fmt(r.total)}</td></tr>
-        <tr class="tot"><td><b>淨利</b></td><td class="num"><b class="txt-${keepTone(r.keep)}">${fmt(r.profit)}</b></td></tr>
+        <tr class="tot"><td>直接成本</td><td class="num">−${fmt(r.direct)}</td></tr>
+        <tr class="tot"><td><b>毛利</b></td><td class="num"><b>${fmt(r.gross)}</b></td></tr>
+        <tr class="sub"><td>　營運分攤（營收佔比 ${s.rev?Math.round(r.revenue/s.rev*100):0}%）</td><td class="num">−${fmt(r.opex)}</td></tr>
+        <tr class="tot"><td><b>淨利</b></td><td class="num"><b class="txt-${keepTone(r.keep)}">${fmt(r.net)}</b></td></tr>
+        ${showOwner?`
+        <tr class="sub owner"><td>　我的時間　${r.hours} 小時 × ${fmt(d.settings.owner_rate)}</td><td class="num">−${fmt(r.ownerCost)}</td></tr>
+        <tr class="tot owner"><td><b>含我的時間後</b></td><td class="num"><b class="${r.withOwner<0?'txt-red':'txt-green'}">${fmt(r.withOwner)}</b></td></tr>`:''}
       </tbody></table>
-      <div class="pl-hours">我自己投入 <b>${r.hours} 小時</b>　<span class="hint">（不計入損益，單獨看）</span></div>
+      ${showOwner?'':`<div class="pl-hours">我自己投入 <b>${r.hours} 小時</b>　<span class="hint">（未計入）</span></div>`}
     </div>`).join('')}
+  </div>
+
+  <div class="panel owner-panel">
+    <div class="panel-head">
+      <h3>含我的時間後</h3>
+      <button class="btn small ${showOwner?'':'ghost'}" onclick="state.plOwner=!state.plOwner;render()">
+        ${showOwner?'收起':'展開'}</button>
+    </div>
+    <p class="hint" style="margin-bottom:10px">
+      你沒有領薪水，但你的時間是這間公司最貴的資源。用顧問時薪 ${fmt(d.settings.owner_rate)}／小時換算機會成本，
+      看的是「這個案子吃掉我多少時間」，不是要你去跟誰請款。
+    </p>
+    ${showOwner?`
+    <table class="tbl"><tbody>
+      <tr><td>淨利合計</td><td class="num">${fmt(s.net)}</td></tr>
+      <tr><td>我的時間　${s.hrs} 小時 × ${fmt(d.settings.owner_rate)}</td><td class="num">−${fmt(s.ownerCost)}</td></tr>
+      <tr class="tot"><td><b>含我的時間後</b></td>
+        <td class="num"><b class="${s.withOwner<0?'txt-red':'txt-green'}">${fmt(s.withOwner)}</b></td></tr>
+    </tbody></table>
+    <p class="hint" style="margin-top:10px">這個數字為負，不代表生意做不得，代表<b>這些案子需要更少的你</b>。</p>`
+    :`<p class="hint">展開後所有專案都會多兩列。預設收起，因為多數案子算進去都會是負的——天天看著它不會讓事情變好。</p>`}
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h3>營運固定開銷</h3>
+      <span class="hint">不屬於任何單一專案，但確實花掉了｜分攤方式：${esc(d.opex.method)}</span></div>
+    <table class="tbl"><tbody>
+      ${d.opex.items.map(i=>`<tr><td>${esc(i.name)}</td><td class="num">${fmt(i.amount)}</td></tr>`).join('')}
+      <tr class="tot"><td><b>每月合計</b></td><td class="num"><b>${fmt(opexTotal())}</b></td></tr>
+    </tbody></table>
+    <p class="hint" style="margin-top:10px">⚠️ 尚未包含稅。實際落袋金額會再低一些。</p>
   </div>`;
 }
-const projPLRow = cid => projectPL(cid);
 
 /* --- 分頁三：人員 --- */
 function projPeople(){
