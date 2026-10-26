@@ -107,6 +107,75 @@ td .sub{font-size:12px;color:var(--muted);margin-top:3px}
 .info-card p{font-size:12.5px;color:#5a5347;line-height:1.7}
 
 /* ---------- 看板 ---------- */
+/* ---------- 模組 10：專案管理 ---------- */
+.proj-tabs{display:flex;gap:6px;margin-bottom:18px;border-bottom:1px solid var(--line)}
+.ptab{background:none;border:0;border-bottom:2px solid transparent;padding:9px 16px;font-size:14px;cursor:pointer;color:var(--muted);font-family:inherit}
+.ptab:hover{color:var(--text)}
+.ptab.on{color:var(--ink);border-bottom-color:var(--ink);font-weight:700}
+
+.txt-red{color:var(--red)} .txt-yellow{color:var(--yellow)} .txt-green{color:var(--green)}
+
+/* 看板：三大欄 */
+.wait-board{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.wcol{background:#fff;border:1px solid var(--line);border-radius:11px;padding:12px}
+.wcol h4{font-size:13.5px;display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap}
+.wcount{background:var(--cream-2);border-radius:10px;padding:1px 9px;font-size:12px}
+.wcol .warn{font-size:11px;color:var(--red);font-weight:400}
+.wsubs{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:10px}
+.wsub{background:var(--cream-2);border:1px solid var(--line);border-radius:12px;padding:2px 9px;font-size:11px;color:var(--muted)}
+.wcard{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:10px 11px;margin-bottom:9px;font-size:12.5px}
+.wbrand{font-size:11.5px;font-weight:700;margin-bottom:3px}
+.wtitle{font-weight:700;line-height:1.45;margin-bottom:6px}
+.wmeta{display:flex;align-items:center;gap:7px;margin-bottom:5px}
+.wtype{background:var(--cream-2);border-radius:4px;padding:1px 7px;font-size:11px;color:var(--muted)}
+.wdays{font-size:11.5px;font-weight:700;color:var(--muted)}
+.wdays.yellow{color:var(--yellow)} .wdays.red{color:var(--red)}
+.wnext{font-size:11.5px;color:var(--muted);line-height:1.5;margin-bottom:7px}
+.wfoot{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.wwho{font-size:11px;color:var(--muted)}
+.nudge{background:var(--cream-2);border:1px solid var(--line);border-radius:14px;padding:2px 10px;font-size:11px;cursor:pointer;font-family:inherit;color:var(--text)}
+.nudge:hover{background:var(--gold);color:#fff;border-color:var(--gold)}
+
+/* 表格 */
+.tbl{width:100%;border-collapse:collapse;font-size:13px}
+.tbl th{text-align:left;padding:8px 10px;border-bottom:1px solid var(--line);font-size:12px;color:var(--muted);font-weight:700}
+.tbl td{padding:8px 10px;border-bottom:1px solid var(--line)}
+.tbl .num{text-align:right;font-variant-numeric:tabular-nums}
+.tbl.mini td{padding:5px 10px;font-size:12.5px;border-bottom:0}
+.tbl.mini .sub td{color:var(--muted)}
+.tbl.mini .tot td{border-top:1px solid var(--line);padding-top:7px}
+
+/* 損益 */
+.pl-row{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:12px}
+.pl-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;flex-wrap:wrap;gap:8px}
+.pl-keep{font-size:13px;font-weight:700}
+.pl-hours{margin-top:8px;padding-top:8px;border-top:1px dashed var(--line);font-size:12.5px;color:var(--muted)}
+
+/* 人員 */
+.pp-row{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px;margin-bottom:12px}
+.pp-head{display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.pp-cost{font-size:12.5px;color:var(--muted)}
+.pp-tot{margin-left:auto;font-size:12.5px;font-weight:700}
+.pp-bar{display:flex;align-items:center;gap:10px;margin-bottom:6px;font-size:12.5px}
+.pp-name{width:92px;flex-shrink:0}
+.pp-track{flex:1;height:9px;background:var(--cream-2);border-radius:5px;overflow:hidden}
+.pp-track i{display:block;height:100%;border-radius:5px}
+.pp-pct{width:40px;text-align:right;font-variant-numeric:tabular-nums}
+.pp-amt{width:78px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+
+/* 決策紀錄 */
+.dec-line{border-left:2px solid var(--line);padding-left:0;margin-left:8px}
+.dec{display:flex;gap:14px;padding:0 0 18px 18px;position:relative}
+.dec::before{content:'';position:absolute;left:-5px;top:4px;width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.dec-date{font-size:12px;color:var(--muted);width:72px;flex-shrink:0;padding-top:1px;font-variant-numeric:tabular-nums}
+.dec-body{flex:1}
+.dec-top{margin-bottom:5px;font-size:13.5px}
+.dec-what{margin-left:8px;font-weight:700}
+.dec-why{font-size:12.5px;color:var(--muted);line-height:1.6;margin-bottom:2px}
+.dec-k{display:inline-block;width:48px;color:var(--ink);font-weight:700}
+
+@media (max-width:980px){ .wait-board{grid-template-columns:1fr} }
+
 .kanban{display:grid;grid-template-columns:repeat(6,minmax(160px,1fr));gap:12px;overflow-x:auto}
 .kcol{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px}
 .kcol h4{font-size:13px;display:flex;justify-content:space-between;margin-bottom:10px;padding:0 4px}
@@ -289,13 +358,53 @@ campaigns: [
  {id:'cp-xs-q4',client_id:'c-xiaoshu',quarter:'2026-Q4',theme:'冬季共讀月 → 聖誕繪本禮盒',budget:0}
 ],
 content: [
- {id:'ct-001',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'茶園入冬：焙火職人的一天',platform:'FB+IG',status:'已發布',content_body:'從採收到焙火，帶讀者走一趟茶園的冬天。',business_goal:'建立信任',scheduled_date:'2026-11-03',published_date:'2026-11-03',value_ntd:1500,next_step:'可認列交付並追蹤成效'},
- {id:'ct-002',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'三種焙火程度喝起來差在哪',platform:'IG',status:'待客戶審核',content_body:'輕焙、中焙、重焙茶湯對比短影音。',business_goal:'互動增長',scheduled_date:'2026-11-10',published_date:null,value_ntd:1800,next_step:'等待客戶回覆或催審'},
- {id:'ct-003',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'冬天也能喝的冷泡茶做法',platform:'SEO',status:'草稿中',content_body:'',business_goal:'導流名單',scheduled_date:'2026-11-17',published_date:null,value_ntd:2000,next_step:'完成初稿後送審'},
- {id:'ct-004',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'年節禮盒搶先看',platform:'FB+IG',status:'待補資料',content_body:'禮盒視覺與價格待客戶提供。',business_goal:'轉換營收',scheduled_date:'2026-11-24',published_date:null,value_ntd:1500,next_step:'向客戶補禮盒素材後再產文'},
- {id:'ct-005',client_id:'c-maohai',campaign_id:'cp-mh-q4',title:'這個月的盒子裡有什麼？',platform:'IG',status:'已發布',content_body:'十一月訂閱盒開箱 Reels。',business_goal:'建立信任',scheduled_date:'2026-11-05',published_date:'2026-11-05',value_ntd:1200,next_step:'可認列交付並追蹤成效'},
- {id:'ct-006',client_id:'c-maohai',campaign_id:'cp-mh-q4',title:'年末訂閱優惠倒數',platform:'FB+IG',status:'待客戶審核',content_body:'年訂方案限時優惠。',business_goal:'轉換營收',scheduled_date:'2026-11-19',published_date:null,value_ntd:1500,next_step:'等待客戶回覆或催審'},
- {id:'ct-007',client_id:'c-xiaoshu',campaign_id:'cp-xs-q4',title:'睡前十分鐘：共讀的三個小技巧',platform:'Facebook',status:'草稿中',content_body:'給忙碌爸媽的共讀入門。',business_goal:'建立信任',scheduled_date:'2026-11-12',published_date:null,value_ntd:1500,next_step:'完成初稿後送審'}
+ {id:'ct-001',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'茶園入冬：焙火職人的一天',platform:'FB+IG',status:'已發布',content_body:'從採收到焙火，帶讀者走一趟茶園的冬天。',business_goal:'建立信任',scheduled_date:'2026-11-03',published_date:'2026-11-03',value_ntd:1500,next_step:'可認列交付並追蹤成效',item_type:'文案',waiting_on:null,waiting_days:0,staff_id:'s-zhe'},
+ {id:'ct-002',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'三種焙火程度喝起來差在哪',platform:'IG',status:'待客戶審核',content_body:'輕焙、中焙、重焙茶湯對比短影音。',business_goal:'互動增長',scheduled_date:'2026-11-10',published_date:null,value_ntd:1800,next_step:'等待客戶回覆或催審',item_type:'文案',waiting_on:'客戶-審稿',waiting_days:12,staff_id:'s-zhe'},
+ {id:'ct-003',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'冬天也能喝的冷泡茶做法',platform:'SEO',status:'草稿中',content_body:'',business_goal:'導流名單',scheduled_date:'2026-11-17',published_date:null,value_ntd:2000,next_step:'完成初稿後送審',item_type:'文案',waiting_on:'我',waiting_days:2,staff_id:null},
+ {id:'ct-004',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'年節禮盒搶先看',platform:'FB+IG',status:'待補資料',content_body:'禮盒視覺與價格待客戶提供。',business_goal:'轉換營收',scheduled_date:'2026-11-24',published_date:null,value_ntd:1500,next_step:'向客戶補禮盒素材後再產文',item_type:'文案',waiting_on:'客戶-素材',waiting_days:8,staff_id:null},
+ {id:'ct-005',client_id:'c-maohai',campaign_id:'cp-mh-q4',title:'這個月的盒子裡有什麼？',platform:'IG',status:'已發布',content_body:'十一月訂閱盒開箱 Reels。',business_goal:'建立信任',scheduled_date:'2026-11-05',published_date:'2026-11-05',value_ntd:1200,next_step:'可認列交付並追蹤成效',item_type:'文案',waiting_on:null,waiting_days:0,staff_id:'s-zhe'},
+ {id:'ct-006',client_id:'c-maohai',campaign_id:'cp-mh-q4',title:'年末訂閱優惠倒數',platform:'FB+IG',status:'待客戶審核',content_body:'年訂方案限時優惠。',business_goal:'轉換營收',scheduled_date:'2026-11-19',published_date:null,value_ntd:1500,next_step:'等待客戶回覆或催審',item_type:'文案',waiting_on:'客戶-審稿',waiting_days:3,staff_id:'s-zhe'},
+ {id:'ct-007',client_id:'c-xiaoshu',campaign_id:'cp-xs-q4',title:'睡前十分鐘：共讀的三個小技巧',platform:'Facebook',status:'草稿中',content_body:'給忙碌爸媽的共讀入門。',business_goal:'建立信任',scheduled_date:'2026-11-12',published_date:null,value_ntd:1500,next_step:'完成初稿後送審',item_type:'文案',waiting_on:'我',waiting_days:1,staff_id:null},
+ {id:'ct-008',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'年節禮盒主視覺',platform:'—',status:'草稿中',content_body:'禮盒三款包裝的主視覺設計。',business_goal:'轉換營收',scheduled_date:'2026-11-20',published_date:null,value_ntd:0,next_step:'等美編交稿',item_type:'設計',waiting_on:'外包',waiting_days:5,staff_id:'s-mei'},
+ {id:'ct-009',client_id:'c-maohai',campaign_id:'cp-mh-q4',title:'聖誕開箱影片剪輯',platform:'IG',status:'草稿中',content_body:'30 秒開箱 Reels。',business_goal:'互動增長',scheduled_date:'2026-12-05',published_date:null,value_ntd:0,next_step:'等剪輯交件',item_type:'影片',waiting_on:'外包',waiting_days:2,staff_id:'s-kay'},
+ {id:'ct-010',client_id:'c-xiaoshu',campaign_id:'cp-xs-q4',title:'冬季共讀月活動頁',platform:'SEO',status:'待補資料',content_body:'活動規模與贈品預算未定。',business_goal:'導流名單',scheduled_date:'2026-12-01',published_date:null,value_ntd:2500,next_step:'等客戶核預算',item_type:'文案',waiting_on:'客戶-預算',waiting_days:15,staff_id:null},
+ {id:'ct-011',client_id:'c-maohai',campaign_id:'cp-mh-q4',title:'十二月訂閱盒商品照',platform:'—',status:'待補資料',content_body:'等客戶寄樣品才能拍。',business_goal:'建立信任',scheduled_date:'2026-12-03',published_date:null,value_ntd:0,next_step:'向客戶催樣品',item_type:'設計',waiting_on:'客戶-素材',waiting_days:9,staff_id:null}
+],
+staff: [
+ {id:'s-mei', name:'小美', role:'美編', cost_type:'月費', monthly_cost:18000, status:'合作中'},
+ {id:'s-zhe', name:'阿哲', role:'文案', cost_type:'月費', monthly_cost:15000, status:'合作中'},
+ {id:'s-kay', name:'Kay',  role:'剪輯', cost_type:'按件', monthly_cost:0,     status:'合作中'}
+],
+projectStaff: [
+ {id:'ps-1', client_id:'c-shanlan', staff_id:'s-mei', allocation_pct:40},
+ {id:'ps-2', client_id:'c-maohai',  staff_id:'s-mei', allocation_pct:35},
+ {id:'ps-3', client_id:'c-xiaoshu', staff_id:'s-mei', allocation_pct:25},
+ {id:'ps-4', client_id:'c-shanlan', staff_id:'s-zhe', allocation_pct:30},
+ {id:'ps-5', client_id:'c-maohai',  staff_id:'s-zhe', allocation_pct:40}
+],
+projectCosts: [
+ {id:'pc-1', client_id:'c-shanlan', cost_type:'廣告費',   amount:12000, occurred_on:'2026-11-05', note:'Meta 年節禮盒預熱'},
+ {id:'pc-2', client_id:'c-shanlan', cost_type:'按件外包', amount:5000,  occurred_on:'2026-11-08', note:'茶園實拍攝影'},
+ {id:'pc-3', client_id:'c-maohai',  cost_type:'廣告費',   amount:8000,  occurred_on:'2026-11-06', note:'Meta 訂閱優惠'},
+ {id:'pc-4', client_id:'c-maohai',  cost_type:'按件外包', amount:3000,  occurred_on:'2026-11-12', note:'Kay 影片剪輯'},
+ {id:'pc-5', client_id:'c-xiaoshu', cost_type:'廣告費',   amount:3000,  occurred_on:'2026-11-07', note:'FB 共讀月推廣'}
+],
+ownerHours: [
+ {id:'oh-1', client_id:'c-shanlan', hours:22},
+ {id:'oh-2', client_id:'c-maohai',  hours:18},
+ {id:'oh-3', client_id:'c-xiaoshu', hours:12}
+],
+decisions: [
+ {id:'dc-1', client_id:'c-shanlan', decided_on:'2026-11-18', decision:'禮盒改用牛皮紙，不用塑膠內襯', reason:'客戶說要主打環保，塑膠殼與品牌訴求衝突', decided_by:'客戶 王經理', impact:'主視覺要重拍，ct-008 延一週'},
+ {id:'dc-2', client_id:'c-shanlan', decided_on:'2026-11-14', decision:'文案拿掉「天然釀造」四個字', reason:'該品項含焦糖色素，法定分類為調理茶，稱釀造違規', decided_by:'我', impact:'所有已排程素材都要掃一次'},
+ {id:'dc-3', client_id:'c-maohai',  decided_on:'2026-11-11', decision:'十二月不做聯名，改做年末回顧', reason:'聯名對象檔期對不上，硬做會壓縮製作時間', decided_by:'我 + 客戶窗口', impact:'12 月內容主題全部換掉'},
+ {id:'dc-4', client_id:'c-xiaoshu', decided_on:'2026-11-09', decision:'共讀月活動縮小規模', reason:'客戶預算還沒核下來，先做小規模試水溫', decided_by:'客戶 林小姐', impact:'ct-010 等預算確認才能動'}
+],
+nudges: [
+ {id:'ng-1', item_id:'ct-002', nudged_at:'2026-11-16', channel:'LINE'},
+ {id:'ng-2', item_id:'ct-002', nudged_at:'2026-11-21', channel:'Email'},
+ {id:'ng-3', item_id:'ct-010', nudged_at:'2026-11-18', channel:'LINE'},
+ {id:'ng-4', item_id:'ct-011', nudged_at:'2026-11-20', channel:'LINE'}
 ],
 crm: [
  {id:'crm-001',company_name:'山嵐茶業有限公司',contact_name:'王經理',contact_title:'行銷經理',contact_method:'Email',stage:'已成交',follow_up_status:'服務中',next_contact_date:'2026-11-20',deal_value:90000,marketing_need:'FB/IG 經營 + SEO 文章',owner:'業務 A',priority:'高',notes:'（示範資料）Q4 年節檔期為重點，禮盒素材待補。'},
@@ -505,7 +614,8 @@ const ROUTES = [
  {key:'schedule',     num:7, title:'內容排程',   sub:'跨品牌排程看板，A 品牌不會發到 B 品牌', icon:'▦'},
  {key:'revenue',      num:8, title:'收益與交付', sub:'交付流水帳、預算分配、內容 → 營收關聯', icon:'▤'},
  {key:'crm',          num:9, title:'客戶總管理', sub:'CRM 管線：從名單、提案到續約全追蹤', icon:'◇'},
- {key:'admin',        num:10,title:'管理員',     sub:'會員管理、密碼重設申請處理', icon:'⚙', adminOnly:true},
+ {key:'project',      num:10,title:'專案管理',   sub:'球在誰手上、專案損益、人員分攤、決策紀錄', icon:'◫'},
+ {key:'admin',        num:11,title:'管理員',     sub:'會員管理、密碼重設申請處理', icon:'⚙', adminOnly:true},
 ];
 
 function renderNav(){
@@ -964,6 +1074,222 @@ function pageRevenue(){
 }
 
 /* =====================================================
+   模組 10：專案管理（看板／損益／人員／決策）
+===================================================== */
+
+/* --- 共用計算 --- */
+const staffOf = id => state.data.staff.find(s=>s.id===id);
+
+/* 單一品牌專案的損益。人員成本用「月費 × 分攤比例」，不用工時——
+   外包是月費制，計時對不上，而且沒人會天天按碼表。 */
+function projectPL(cid){
+  const d = state.data;
+  const client = d.clients.find(c=>c.id===cid) || {};
+  const revenue = client.monthly_fee || 0;
+
+  const people = d.projectStaff.filter(p=>p.client_id===cid).map(p=>{
+    const s = staffOf(p.staff_id) || {};
+    return { name:s.name, role:s.role, pct:p.allocation_pct,
+             cost: Math.round((s.monthly_cost||0) * p.allocation_pct / 100) };
+  });
+  const peopleCost = people.reduce((a,b)=>a+b.cost,0);
+
+  const costs = d.projectCosts.filter(c=>c.client_id===cid);
+  const adCost    = costs.filter(c=>c.cost_type==='廣告費').reduce((a,b)=>a+b.amount,0);
+  const otherCost = costs.filter(c=>c.cost_type!=='廣告費').reduce((a,b)=>a+b.amount,0);
+
+  const total  = peopleCost + adCost + otherCost;
+  const profit = revenue - total;
+  const keep   = revenue ? Math.round(profit / revenue * 1000) / 10 : 0;  // 每 100 元留下
+  const hours  = (d.ownerHours.find(h=>h.client_id===cid)||{}).hours || 0;
+
+  return { client, revenue, people, peopleCost, adCost, otherCost, costs, total, profit, keep, hours };
+}
+
+/* 留存率的警示色：低於 20% 紅、低於 40% 黃 */
+const keepTone = k => k < 20 ? 'red' : k < 40 ? 'yellow' : 'green';
+
+function pageProject(){
+  const tab = state.projTab || 'board';
+  const T = [['board','看板'],['pl','損益'],['people','人員'],['decision','決策']];
+  const body = {board:projBoard, pl:projPL, people:projPeople, decision:projDecision}[tab]();
+  return `
+  <h1 class="page-title">專案管理</h1>
+  <p class="page-desc">球在誰手上、這個案子賺不賺、誰負責、為什麼這樣決定。</p>
+  <div class="proj-tabs">
+    ${T.map(([k,n])=>`<button class="ptab ${tab===k?'on':''}" onclick="state.projTab='${k}';render()">${n}</button>`).join('')}
+  </div>
+  ${body}`;
+}
+
+/* --- 分頁一：看板（按「等誰」分，不按進度分）--- */
+function projBoard(){
+  const d = state.data;
+  const open = d.content.filter(c=>c.waiting_on);
+  const groups = [
+    {key:'我',   label:'等我做',  subs:[],                              icon:'✎'},
+    {key:'客戶', label:'等客戶',  subs:['客戶-審稿','客戶-素材','客戶-預算'], icon:'◇'},
+    {key:'外包', label:'等外包',  subs:[],                              icon:'🎨'},
+  ];
+  const pick = g => g.subs.length ? open.filter(c=>g.subs.includes(c.waiting_on))
+                                  : open.filter(c=>c.waiting_on===g.key);
+  const subLabel = s => s.split('-')[1] || s;
+
+  return `
+  <div class="panel">
+    <div class="panel-head"><h3>球在誰手上</h3>
+      <span class="hint">按「等誰」分欄，不按進度分——一半的事不在你手上推</span></div>
+    <div class="wait-board">
+    ${groups.map(g=>{
+      const list = pick(g).sort((a,b)=>b.waiting_days-a.waiting_days);
+      const stuck = list.filter(c=>c.waiting_days>=7).length;
+      return `<div class="wcol">
+        <h4>${g.label}<span class="wcount">${list.length}</span>${stuck?`<span class="warn">⚠ ${stuck} 件卡超過 7 天</span>`:''}</h4>
+        ${g.subs.length?`<div class="wsubs">${g.subs.map(s=>{
+          const n = open.filter(c=>c.waiting_on===s).length;
+          return `<span class="wsub">${subLabel(s)} ${n}</span>`;}).join('')}</div>`:''}
+        ${list.length?list.map(c=>{
+          const cl = d.clients.find(x=>x.id===c.client_id)||{};
+          const st = staffOf(c.staff_id);
+          const nn = d.nudges.filter(n=>n.item_id===c.id).length;
+          const tone = c.waiting_days>=10?'red':c.waiting_days>=7?'yellow':'';
+          return `<div class="wcard">
+            <div class="wbrand" style="color:${cl.color||'var(--ink)'}">${esc(cl.brand_name||'')}</div>
+            <div class="wtitle">${esc(c.title)}</div>
+            <div class="wmeta">
+              <span class="wtype">${esc(c.item_type||'文案')}</span>
+              <span class="wdays ${tone}">卡 ${c.waiting_days} 天</span>
+            </div>
+            <div class="wnext">${esc(c.next_step||'')}</div>
+            <div class="wfoot">
+              ${st?`<span class="wwho">${esc(st.name)}・${esc(st.role)}</span>`:'<span></span>'}
+              ${c.waiting_on!=='我'?`<button class="nudge" onclick="doNudge('${c.id}')">催一下${nn?` (${nn})`:''}</button>`:''}
+            </div>
+          </div>`;}).join(''):'<div class="kempty">目前沒有</div>'}
+      </div>`;}).join('')}
+    </div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>卡最久的</h3><span class="hint">等待時間不顯示，你就會忘記它在等</span></div>
+    <table class="tbl"><thead><tr><th>品牌</th><th>項目</th><th>等誰</th><th>卡幾天</th><th>已催</th><th>下一步</th></tr></thead><tbody>
+    ${open.slice().sort((a,b)=>b.waiting_days-a.waiting_days).slice(0,6).map(c=>{
+      const cl = d.clients.find(x=>x.id===c.client_id)||{};
+      const nn = d.nudges.filter(n=>n.item_id===c.id).length;
+      return `<tr>
+        <td><b style="color:${cl.color||''}">${esc(cl.brand_name||'')}</b></td>
+        <td>${esc(c.title)}</td>
+        <td>${esc(c.waiting_on)}</td>
+        <td class="${c.waiting_days>=10?'txt-red':c.waiting_days>=7?'txt-yellow':''}"><b>${c.waiting_days} 天</b></td>
+        <td>${nn?nn+' 次':'—'}</td>
+        <td style="color:var(--muted)">${esc(c.next_step||'')}</td></tr>`;}).join('')}
+    </tbody></table>
+  </div>`;
+}
+
+function doNudge(itemId){
+  const d = state.data;
+  d.nudges.push({id:'ng-'+Date.now(), item_id:itemId, nudged_at:new Date().toISOString().slice(0,10), channel:'LINE'});
+  const it = d.content.find(c=>c.id===itemId);
+  toast(`已記錄催促：${it?it.title:''}`);
+  render();
+}
+
+/* --- 分頁二：損益 --- */
+function projPL(){
+  const d = state.data;
+  const rows = d.clients.map(c=>projPLRow(c.id)).sort((a,b)=>a.keep-b.keep);  // 最虧的排最上面
+  const sum = rows.reduce((a,r)=>({rev:a.rev+r.revenue, cost:a.cost+r.total, hrs:a.hrs+r.hours}),{rev:0,cost:0,hrs:0});
+  const allKeep = sum.rev ? Math.round((sum.rev-sum.cost)/sum.rev*1000)/10 : 0;
+
+  return `
+  <div class="stats">
+    <div class="stat"><div class="label">本月總收入</div><div class="val">${fmt(sum.rev)}</div></div>
+    <div class="stat"><div class="label">投入成本</div><div class="val">${fmt(sum.cost)}</div></div>
+    <div class="stat"><div class="label">淨利</div><div class="val">${fmt(sum.rev-sum.cost)}</div></div>
+    <div class="stat"><div class="label">每收進 100 元，留下</div>
+      <div class="val txt-${keepTone(allKeep)}">${allKeep} 元</div>
+      <div class="note">你自己的 ${sum.hrs} 小時還沒算進去</div></div>
+  </div>
+  <div class="panel">
+    <div class="panel-head"><h3>各專案損益</h3><span class="hint">預設按留存率由低到高——比例低的才是問題，不是金額小的</span></div>
+    ${rows.map(r=>`
+    <div class="pl-row">
+      <div class="pl-head">
+        <b style="color:${r.client.color||''}">${esc(r.client.brand_name||'')}</b>
+        <span class="pl-keep txt-${keepTone(r.keep)}">每 100 元留下 ${r.keep} 元</span>
+      </div>
+      <table class="tbl mini"><tbody>
+        <tr><td>收入　月費</td><td class="num">${fmt(r.revenue)}</td></tr>
+        ${r.people.map(p=>`<tr class="sub"><td>　${esc(p.name)}　${esc(p.role)}　${p.pct}%</td><td class="num">−${fmt(p.cost)}</td></tr>`).join('')}
+        ${r.adCost?`<tr class="sub"><td>　廣告費</td><td class="num">−${fmt(r.adCost)}</td></tr>`:''}
+        ${r.otherCost?`<tr class="sub"><td>　按件外包</td><td class="num">−${fmt(r.otherCost)}</td></tr>`:''}
+        <tr class="tot"><td>投入成本</td><td class="num">−${fmt(r.total)}</td></tr>
+        <tr class="tot"><td><b>淨利</b></td><td class="num"><b class="txt-${keepTone(r.keep)}">${fmt(r.profit)}</b></td></tr>
+      </tbody></table>
+      <div class="pl-hours">我自己投入 <b>${r.hours} 小時</b>　<span class="hint">（不計入損益，單獨看）</span></div>
+    </div>`).join('')}
+  </div>`;
+}
+const projPLRow = cid => projectPL(cid);
+
+/* --- 分頁三：人員 --- */
+function projPeople(){
+  const d = state.data;
+  return `
+  <div class="panel">
+    <div class="panel-head"><h3>人員與分攤</h3>
+      <span class="hint">分攤用「幾成」不用工時——決策需要的精度就這麼粗</span></div>
+    ${d.staff.map(s=>{
+      const al = d.projectStaff.filter(p=>p.staff_id===s.id);
+      const tot = al.reduce((a,b)=>a+b.allocation_pct,0);
+      return `<div class="pp-row">
+        <div class="pp-head">
+          <b>${esc(s.name)}</b><span class="tag">${esc(s.role)}</span>
+          <span class="pp-cost">${s.cost_type==='月費'?`月費 ${fmt(s.monthly_cost)}`:'按件計酬'}</span>
+          <span class="pp-tot ${tot>100?'txt-red':tot<100&&s.cost_type==='月費'?'txt-yellow':'txt-green'}">
+            合計 ${tot}%${tot>100?' ⚠ 超載':tot<100&&s.cost_type==='月費'?` ⚠ 未分配 ${100-tot}%`:' ✓'}</span>
+        </div>
+        <div class="pp-bars">
+        ${al.length?al.map(p=>{
+          const cl = d.clients.find(c=>c.id===p.client_id)||{};
+          return `<div class="pp-bar">
+            <span class="pp-name">${esc(cl.brand_name||'')}</span>
+            <span class="pp-track"><i style="width:${p.allocation_pct}%;background:${cl.color||'var(--ink)'}"></i></span>
+            <span class="pp-pct">${p.allocation_pct}%</span>
+            <span class="pp-amt">${s.cost_type==='月費'?fmt(Math.round(s.monthly_cost*p.allocation_pct/100)):'—'}</span>
+          </div>`;}).join(''):'<div class="kempty">尚未分配到任何專案</div>'}
+        </div>
+      </div>`;}).join('')}
+    <p class="hint" style="margin-top:12px">合計不到 100% 表示有產能沒被算進任何專案，或是忘了填。</p>
+  </div>`;
+}
+
+/* --- 分頁四：決策紀錄 --- */
+function projDecision(){
+  const d = state.data;
+  const list = d.decisions.slice().sort((a,b)=>b.decided_on.localeCompare(a.decided_on));
+  return `
+  <div class="panel">
+    <div class="panel-head"><h3>決策紀錄</h3>
+      <span class="hint">「上次為什麼換照片」「這個誰說可以的」——缺的就是「為什麼」和「誰決定」</span></div>
+    <div class="dec-line">
+    ${list.map(x=>{
+      const cl = d.clients.find(c=>c.id===x.client_id)||{};
+      return `<div class="dec">
+        <div class="dec-date">${esc(x.decided_on)}</div>
+        <div class="dec-body">
+          <div class="dec-top"><b style="color:${cl.color||''}">${esc(cl.brand_name||'')}</b>
+            <span class="dec-what">${esc(x.decision)}</span></div>
+          <div class="dec-why"><span class="dec-k">為什麼</span>${esc(x.reason)}</div>
+          <div class="dec-why"><span class="dec-k">誰決定</span>${esc(x.decided_by)}</div>
+          ${x.impact?`<div class="dec-why"><span class="dec-k">影響</span>${esc(x.impact)}</div>`:''}
+        </div>
+      </div>`;}).join('')}
+    </div>
+  </div>`;
+}
+
+/* =====================================================
    模組 9：客戶總管理 CRM
 ===================================================== */
 function pageCRM(){
@@ -1102,7 +1428,8 @@ async function adminDoReset(){
 
 /* ---------------- 渲染主控 ---------------- */
 const PAGES = {overview:pageOverview, clients:pageClients, onboarding:pageOnboarding, training:pageTraining,
-  generate:pageGenerate, campaign:pageCampaign, schedule:pageSchedule, revenue:pageRevenue, crm:pageCRM, admin:pageAdmin};
+  generate:pageGenerate, campaign:pageCampaign, schedule:pageSchedule, revenue:pageRevenue, crm:pageCRM,
+  project:pageProject, admin:pageAdmin};
 
 function render(){
   let r = ROUTES.find(x=>x.key===state.route) || ROUTES[0];
