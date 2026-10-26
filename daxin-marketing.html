@@ -304,7 +304,10 @@ crm: [
 };
 
 const STATUSES = ['草稿中','待補資料','待客戶審核','已發布','緊急處理','延後發布'];
-const state = { data: JSON.parse(JSON.stringify(seed)), selClient:'c-shanlan', calMonth:'2026-11', route:'overview' };
+/* 當月 YYYY-MM。用本地時間而非 toISOString()——後者走 UTC，
+   台灣時間每月 1 號凌晨 0-8 點會被算成上個月。 */
+const thisMonth = () => { const d = new Date(); return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0'); };
+const state = { data: JSON.parse(JSON.stringify(seed)), selClient:'c-shanlan', calMonth:thisMonth(), route:'overview' };
 const live = () => API_BASE !== "";
 
 /* ---------------- 會員認證 ---------------- */
@@ -967,7 +970,7 @@ function pageCRM(){
   const d = state.data;
   const active = d.crm.filter(r=>!['已成交','流失'].includes(r.stage));
   const pipeline = d.crm.reduce((s,r)=>s+(r.deal_value||0),0);
-  const monthTodo = d.crm.filter(r=>r.next_contact_date && r.next_contact_date.startsWith(new Date().toISOString().slice(0,7))).length;
+  const monthTodo = d.crm.filter(r=>r.next_contact_date && r.next_contact_date.startsWith(thisMonth())).length;
   return `
   <h1 class="page-title">客戶總管理</h1>
   <p class="page-desc">管理客戶聯絡人、商機階段、跟進狀態、下次聯繫與任務紀錄，讓內容交付接上客戶關係。</p>
