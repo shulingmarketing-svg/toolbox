@@ -8,17 +8,18 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
 <style>
 :root{
-  --ink:#17140f;          /* 表格／提示等深色區塊 */
-  --ink-2:#24201a;
-  --gold:#c9974a;         /* 主金 */
-  --gold-deep:#a87830;
-  --cream:#f7f1e3;        /* 卡片米 */
-  --cream-2:#efe6d2;
-  --paper:#fdfbf6;        /* 內容底 */
-  --line:#e3d9c4;
-  --text:#2b2620;
-  --muted:#8a8072;
-  --green:#3e7d5a; --green-bg:#dcebe0;
+  --ink:#166534;          /* 主色 森林綠：表頭、提示、選取狀態 */
+  --ink-2:#14532D;
+  --gold:#0D9488;         /* 副色 青綠：CTA 與亮點 */
+  --gold-deep:#0F766E;
+  --coral:#E8857B;        /* 輔助 珊瑚粉：少量點綴 */
+  --cream:#F2F5EE;        /* 面板底 */
+  --cream-2:#E6ECE3;
+  --paper:#FAFAF5;        /* 底色 暖白 */
+  --line:#DCE3D8;
+  --text:#1F2A24;
+  --muted:#6B7568;
+  --green:#166534; --green-bg:#DCFCE7;
   --yellow:#a07816; --yellow-bg:#f5e8c4;
   --blue:#3d6b8e;  --blue-bg:#dbe7f0;
   --red:#b04a3a;   --red-bg:#f3ddd7;
@@ -33,22 +34,22 @@ textarea{resize:vertical;min-height:80px}
 input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
 
 /* ---------- 側欄 ---------- */
-.sidebar{width:210px;background:#E4E4E4;color:#1B2A4A;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.sidebar{width:210px;background:#E4E4E4;color:var(--ink);flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
 .brand{font-family:'Noto Serif TC',serif;font-size:21px;font-weight:900;padding:26px 22px 20px;letter-spacing:1px;border-bottom:1px solid #C9C9C9}
 .nav{flex:1;padding:14px 10px;overflow-y:auto}
-.nav a{display:flex;align-items:center;gap:10px;padding:11px 14px;color:#1B2A4A;text-decoration:none;font-size:14.5px;border-radius:8px;margin-bottom:2px}
+.nav a{display:flex;align-items:center;gap:10px;padding:11px 14px;color:var(--ink);text-decoration:none;font-size:14.5px;border-radius:8px;margin-bottom:2px}
 .nav a .ic{width:16px;text-align:center;opacity:.7;font-size:12px}
-.nav a:hover{background:#CFCFCF;color:#1B2A4A}
-.nav a.active{background:#C2C2C2;color:#1B2A4A;font-weight:700;box-shadow:inset 3px 0 0 var(--gold)}
-.mode-tag{margin:12px;padding:8px 10px;font-size:11.5px;border-radius:8px;background:#D6D6D6;color:#1B2A4A;line-height:1.5}
-.mode-tag b{color:#1B2A4A}
+.nav a:hover{background:#CFCFCF;color:var(--ink)}
+.nav a.active{background:#C2C2C2;color:var(--ink);font-weight:700;box-shadow:inset 3px 0 0 var(--coral)}
+.mode-tag{margin:12px;padding:8px 10px;font-size:11.5px;border-radius:8px;background:#D6D6D6;color:var(--ink);line-height:1.5}
+.mode-tag b{color:var(--ink)}
 
 /* ---------- 主區 ---------- */
 .main{flex:1;min-width:0;display:flex;flex-direction:column}
-.topbar{background:#E4E4E4;color:#1B2A4A;display:flex;align-items:center;gap:14px;padding:14px 26px;border-bottom:3px solid var(--gold)}
-.topbar .num{background:var(--gold);color:var(--ink);font-weight:900;width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.topbar{background:#E4E4E4;color:var(--ink);display:flex;align-items:center;gap:14px;padding:14px 26px;border-bottom:3px solid var(--coral)}
+.topbar .num{background:var(--gold);color:#fff;font-weight:900;width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
 .topbar h2{font-size:18px;font-weight:700}
-.topbar .sub{margin-left:auto;font-size:13px;color:#1B2A4A;font-weight:500;opacity:.75}
+.topbar .sub{margin-left:auto;font-size:13px;color:var(--ink);font-weight:500;opacity:.75}
 .content{padding:28px 30px;max-width:1180px}
 .page-title{font-family:'Noto Serif TC',serif;font-size:34px;font-weight:900;margin-bottom:6px}
 .page-desc{color:var(--muted);font-size:14px;margin-bottom:22px;line-height:1.6}
@@ -59,9 +60,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .stat .label{font-size:13px;color:var(--muted);margin-bottom:6px}
 .stat .val{font-size:27px;font-weight:900}
 .stat .note{font-size:12px;margin-top:4px}
-.stat .bubble{position:absolute;right:-14px;bottom:-18px;width:64px;height:64px;border-radius:50%;opacity:.55}
 .n-green{color:var(--green)} .n-red{color:var(--red)} .n-blue{color:var(--blue)} .n-gold{color:var(--gold-deep)}
-.b-green{background:#bcd8c6} .b-cream{background:#e8d9b5} .b-red{background:#ecc4bb} .b-blue{background:#c3d5e4}
 
 /* ---------- 面板 ---------- */
 .panel{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:20px}
@@ -72,7 +71,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
 .grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 .field label{display:block;font-size:12.5px;font-weight:700;margin-bottom:5px}
-.btn{background:var(--gold);color:var(--ink);border:none;border-radius:9px;padding:11px 20px;font-weight:700;font-size:14px}
+.btn{background:var(--gold);color:#fff;border:none;border-radius:9px;padding:11px 20px;font-weight:700;font-size:14px}
 .btn:hover{background:var(--gold-deep);color:#fff}
 .btn.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
 .btn.small{padding:6px 12px;font-size:12.5px}
@@ -90,7 +89,7 @@ input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-of
 
 /* ---------- 表格 ---------- */
 table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;font-size:13.5px}
-thead{background:var(--ink);color:#e9e2d4}
+thead{background:var(--ink);color:#fff}
 th{padding:10px 12px;text-align:left;font-size:12.5px;font-weight:500}
 td{padding:11px 12px;border-bottom:1px solid #f0ead9;vertical-align:top}
 td .sub{font-size:12px;color:var(--muted);margin-top:3px}
@@ -137,7 +136,7 @@ td .sub{font-size:12px;color:var(--muted);margin-top:3px}
 .gen-out.empty{display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center}
 .step-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
 .step{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
-.step .no{background:var(--gold);color:var(--ink);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-bottom:7px}
+.step .no{background:var(--gold);color:#fff;width:22px;height:22px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-bottom:7px}
 .step b{font-size:13px;display:block;margin-bottom:4px}
 .step p{font-size:11.5px;color:var(--muted);line-height:1.5}
 .toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13.5px;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:.3s;pointer-events:none;border-left:4px solid var(--gold)}
@@ -159,8 +158,8 @@ td .sub{font-size:12px;color:var(--muted);margin-top:3px}
 .auth-tabs button{flex:1;padding:9px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:14px;font-weight:700}
 .auth-tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
 .side-actions{padding:0 12px 14px;display:flex;flex-direction:column;gap:6px}
-.side-actions button{background:#D6D6D6;border:1px solid #C9C9C9;color:#1B2A4A;border-radius:8px;padding:8px;font-size:12.5px}
-.side-actions button:hover{color:#1B2A4A;border-color:var(--gold-deep);background:#CFCFCF}
+.side-actions button{background:#D6D6D6;border:1px solid #C9C9C9;color:var(--ink);border-radius:8px;padding:8px;font-size:12.5px}
+.side-actions button:hover{color:var(--ink);border-color:var(--gold-deep);background:#CFCFCF}
 .del-x{background:none;border:none;color:var(--red);font-size:13px;padding:2px 6px;border-radius:6px}
 .del-x:hover{background:var(--red-bg)}
 
@@ -254,9 +253,9 @@ const API_BASE = "";
 /* ---------------- Demo 種子資料（與 schema.sql 一致） ---------------- */
 const seed = {
 clients: [
- {id:'c-shanlan',company_name:'山嵐茶業有限公司',brand_name:'山嵐茶坊',industry:'茶葉・茶飲',monthly_fee:30000,case_scale:'中案',data_completeness:85,timeline_status:'一般排程',tags:['高山茶','冷泡茶','職人焙火','送禮'],color:'#3e7d5a'},
- {id:'c-maohai',company_name:'毛孩日常有限公司',brand_name:'毛孩日常',industry:'寵物用品',monthly_fee:25000,case_scale:'中案',data_completeness:80,timeline_status:'一般排程',tags:['天然零食','訂閱制','貓狗','社群'],color:'#2A9D8F'},
- {id:'c-xiaoshu',company_name:'小樹文化有限公司',brand_name:'小樹書房',industry:'親子教育・繪本',monthly_fee:20000,case_scale:'小案',data_completeness:78,timeline_status:'一般排程',tags:['親子共讀','繪本訂閱','3-8 歲','週末活動'],color:'#E9911C'}
+ {id:'c-shanlan',company_name:'山嵐茶業有限公司',brand_name:'山嵐茶坊',industry:'茶葉・茶飲',monthly_fee:30000,case_scale:'中案',data_completeness:85,timeline_status:'一般排程',tags:['高山茶','冷泡茶','職人焙火','送禮'],color:'#166534'},
+ {id:'c-maohai',company_name:'毛孩日常有限公司',brand_name:'毛孩日常',industry:'寵物用品',monthly_fee:25000,case_scale:'中案',data_completeness:80,timeline_status:'一般排程',tags:['天然零食','訂閱制','貓狗','社群'],color:'#0D9488'},
+ {id:'c-xiaoshu',company_name:'小樹文化有限公司',brand_name:'小樹書房',industry:'親子教育・繪本',monthly_fee:20000,case_scale:'小案',data_completeness:78,timeline_status:'一般排程',tags:['親子共讀','繪本訂閱','3-8 歲','週末活動'],color:'#E8857B'}
 ],
 profiles: {
  'c-shanlan':{
@@ -460,7 +459,7 @@ async function apiLoad(){
       fetch(API_BASE+'/api/campaigns', h).then(r=>r.json()),
       fetch(API_BASE+'/api/crm', h).then(r=>r.json()),
     ]);
-    const colors = ['#C0392B','#2A9D8F','#E9911C','#3d6b8e','#b0447a'];
+    const colors = ['#166534','#0D9488','#E8857B','#3d6b8e','#a07816'];
     state.data.clients = clients.map((c,i)=>({...c, tags: typeof c.tags==='string'? JSON.parse(c.tags||'[]'):c.tags, color: colors[i%colors.length]}));
     state.data.content = content; state.data.campaigns = campaigns; state.data.crm = crm;
     state.data.profiles = {};
@@ -532,10 +531,10 @@ function pageOverview(){
   <h1 class="page-title">總覽</h1>
   <p class="page-desc">管理多個品牌、季度活動、平台文案與交付狀態，讓老闆和員工知道下一篇內容該為誰、為什麼、在哪個平台發。</p>
   <div class="stats">
-    <div class="stat"><div class="label">本月應交付內容</div><div class="val">${monthDue}</div><div class="note n-green">含 FB / IG / SEO / Reels</div><div class="bubble b-green"></div></div>
-    <div class="stat"><div class="label">AI 資料庫完整度</div><div class="val">${avgComplete}%</div><div class="note n-gold">品牌、產品、競品、歷史內容</div><div class="bubble b-cream"></div></div>
-    <div class="stat"><div class="label">待審核或逾期</div><div class="val">${pending}</div><div class="note n-red">需要主管介入</div><div class="bubble b-red"></div></div>
-    <div class="stat"><div class="label">預估可認列收入</div><div class="val">${fmt(receivable)}</div><div class="note n-blue">以交付完成計算</div><div class="bubble b-blue"></div></div>
+    <div class="stat"><div class="label">本月應交付內容</div><div class="val">${monthDue}</div><div class="note n-green">含 FB / IG / SEO / Reels</div></div>
+    <div class="stat"><div class="label">AI 資料庫完整度</div><div class="val">${avgComplete}%</div><div class="note n-gold">品牌、產品、競品、歷史內容</div></div>
+    <div class="stat"><div class="label">待審核或逾期</div><div class="val">${pending}</div><div class="note n-red">需要主管介入</div></div>
+    <div class="stat"><div class="label">預估可認列收入</div><div class="val">${fmt(receivable)}</div><div class="note n-blue">以交付完成計算</div></div>
   </div>
   <div style="display:grid;grid-template-columns:320px 1fr;gap:16px">
     <div class="panel"><div class="panel-head"><h3>客戶狀態</h3><span class="hint">多品牌管理</span></div>
@@ -647,7 +646,7 @@ async function createClient(){
     monthly_fee:+$('#ob_fee').value||0, case_scale:$('#ob_scale').value, data_completeness:+$('#ob_complete').value,
     timeline_status:$('#ob_timeline').value, tags:[] };
   const res = await apiPost('/api/clients', body);
-  const colors=['#3e7d5a','#b04a3a','#3d6b8e','#a07816','#b0447a'];
+  const colors=['#166534','#0D9488','#E8857B','#3d6b8e','#a07816'];
   state.data.clients.push({...body, id:res.id, color:colors[state.data.clients.length%colors.length]});
   state.data.profiles[res.id] = {positioning:'',target_audience:'',content_pillars:'',competitors:'',writing_restrictions:'',regulation_notes:'',platform_preferences:''};
   state.selClient = res.id;
@@ -674,10 +673,10 @@ function pageTraining(){
   <h1 class="page-title">訓練資料</h1>
   <p class="page-desc">查看目前已整理與訓練完成的 TA、競品、行銷法規、社群平台偏好與文章架構。這些是「產出文章」時餵給 AI 的底層資料。</p>
   <div class="stats">
-    <div class="stat"><div class="label">底層資料來源</div><div class="val">${filled}</div><div class="note n-green">TA / 競品 / 法規 / 社群</div><div class="bubble b-green"></div></div>
-    <div class="stat"><div class="label">目前品牌</div><div class="val" style="font-size:20px">${esc(sel.brand_name||sel.company_name)}</div><div class="note n-gold">可於客戶資料庫切換</div><div class="bubble b-cream"></div></div>
-    <div class="stat"><div class="label">資料完整度</div><div class="val">${Math.round(filled/fields.length*100)}%</div><div class="note n-blue">依欄位填寫計算</div><div class="bubble b-blue"></div></div>
-    <div class="stat"><div class="label">法規檢查</div><div class="val">${(p.regulation_notes||'').trim()?'已設定':'未設定'}</div><div class="note n-red">輸出前自動提醒</div><div class="bubble b-red"></div></div>
+    <div class="stat"><div class="label">底層資料來源</div><div class="val">${filled}</div><div class="note n-green">TA / 競品 / 法規 / 社群</div></div>
+    <div class="stat"><div class="label">目前品牌</div><div class="val" style="font-size:20px">${esc(sel.brand_name||sel.company_name)}</div><div class="note n-gold">可於客戶資料庫切換</div></div>
+    <div class="stat"><div class="label">資料完整度</div><div class="val">${Math.round(filled/fields.length*100)}%</div><div class="note n-blue">依欄位填寫計算</div></div>
+    <div class="stat"><div class="label">法規檢查</div><div class="val">${(p.regulation_notes||'').trim()?'已設定':'未設定'}</div><div class="note n-red">輸出前自動提醒</div></div>
   </div>
   <div class="panel"><div class="panel-head"><h3>${esc(sel.company_name)} — 品牌 DNA 編輯</h3><span class="hint">儲存後供 AI 生成永久沿用</span></div>
     <div class="grid2">
@@ -945,10 +944,10 @@ function pageRevenue(){
   <h1 class="page-title">收益與交付</h1>
   <p class="page-desc">把每一篇內容連到交付價值、狀態與下一步，讓老闆看得懂產能和收入。</p>
   <div class="stats">
-    <div class="stat"><div class="label">完成交付</div><div class="val">${done.length}</div><div class="note n-green">已發布</div><div class="bubble b-green"></div></div>
-    <div class="stat"><div class="label">本季合約值</div><div class="val">${fmt(contract)}</div><div class="note n-gold">依客戶月費估算</div><div class="bubble b-cream"></div></div>
-    <div class="stat"><div class="label">每篇平均價值</div><div class="val">${fmt(avg)}</div><div class="note n-gold">用於內部產能管理</div><div class="bubble b-cream"></div></div>
-    <div class="stat"><div class="label">卡關交付</div><div class="val">${stuck.length}</div><div class="note n-red">需補圖或審稿</div><div class="bubble b-red"></div></div>
+    <div class="stat"><div class="label">完成交付</div><div class="val">${done.length}</div><div class="note n-green">已發布</div></div>
+    <div class="stat"><div class="label">本季合約值</div><div class="val">${fmt(contract)}</div><div class="note n-gold">依客戶月費估算</div></div>
+    <div class="stat"><div class="label">每篇平均價值</div><div class="val">${fmt(avg)}</div><div class="note n-gold">用於內部產能管理</div></div>
+    <div class="stat"><div class="label">卡關交付</div><div class="val">${stuck.length}</div><div class="note n-red">需補圖或審稿</div></div>
   </div>
   <div class="panel"><div class="panel-head"><h3>交付流水帳</h3><span class="hint">老闆看收益，員工看下一步</span></div>
     <table><thead><tr><th>客戶</th><th>內容</th><th>平台</th><th>狀態</th><th>價值</th><th>下一步</th></tr></thead><tbody>
@@ -973,10 +972,10 @@ function pageCRM(){
   <h1 class="page-title">客戶總管理</h1>
   <p class="page-desc">管理客戶聯絡人、商機階段、跟進狀態、下次聯繫與任務紀錄，讓內容交付接上客戶關係。</p>
   <div class="stats">
-    <div class="stat"><div class="label">管理客戶數</div><div class="val">${d.crm.length}</div><div class="note n-green">含潛在與既有客戶</div><div class="bubble b-green"></div></div>
-    <div class="stat"><div class="label">跟進中商機</div><div class="val">${active.length}</div><div class="note n-blue">需求確認到提案</div><div class="bubble b-blue"></div></div>
-    <div class="stat"><div class="label">本月待辦</div><div class="val">${monthTodo}</div><div class="note n-gold">會議、催審、回報</div><div class="bubble b-cream"></div></div>
-    <div class="stat"><div class="label">預估管線價值</div><div class="val">${fmt(pipeline)}</div><div class="note n-green">依商機金額估算</div><div class="bubble b-green"></div></div>
+    <div class="stat"><div class="label">管理客戶數</div><div class="val">${d.crm.length}</div><div class="note n-green">含潛在與既有客戶</div></div>
+    <div class="stat"><div class="label">跟進中商機</div><div class="val">${active.length}</div><div class="note n-blue">需求確認到提案</div></div>
+    <div class="stat"><div class="label">本月待辦</div><div class="val">${monthTodo}</div><div class="note n-gold">會議、催審、回報</div></div>
+    <div class="stat"><div class="label">預估管線價值</div><div class="val">${fmt(pipeline)}</div><div class="note n-green">依商機金額估算</div></div>
   </div>
   <div class="panel"><div class="panel-head"><h3>客戶總管理欄位</h3><span class="hint">建立客戶關係、需求、負責人與下次動作</span></div>
     <div class="grid4">
