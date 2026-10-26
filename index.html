@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>工具箱</title>
+<script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 min-h-screen py-12 px-4">
+  <div class="max-w-xl w-full mx-auto">
+    <h1 class="text-2xl font-bold mb-1 text-center">工具箱</h1>
+    <p class="text-slate-500 mb-8 text-center">請選擇要使用的工具</p>
+
+    <div class="mb-8">
+      <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">英文學習</h2>
+      <div class="space-y-3">
+        <a href="english-quiz-tool.html" class="block px-4 py-3 rounded-lg bg-white border border-slate-200 shadow-sm hover:border-slate-300">
+          <div class="font-semibold">英文測驗練習 — TOEIC &amp; PTE</div>
+          <div class="text-sm text-slate-500">AI 即時出題，自選題型、難度、題數</div>
+        </a>
+        <a href="toeic700-learning-plan.html" class="block px-4 py-3 rounded-lg bg-white border border-slate-200 shadow-sm hover:border-slate-300">
+          <div class="font-semibold">TOEIC 700 · 六個月衝刺計畫</div>
+          <div class="text-sm text-slate-500">分階段學習計畫、週計畫、AI 測驗與考試技巧</div>
+        </a>
+      </div>
+      <p class="text-xs text-slate-400 mt-2">使用時需自行輸入 Anthropic API Key（點右上角齒輪圖示設定），Key 僅存於瀏覽器本機，不會上傳到任何伺服器。</p>
+    </div>
+
+    <div class="mb-8">
+      <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">ESG AI 智能成熟度診斷系統</h2>
+      <div class="space-y-3">
+        <a href="esg-ai-diagnostic-v1.1.html" class="block px-4 py-3 rounded-lg bg-green-600 text-white font-semibold text-center">V1.1 顧問級版本（推薦）</a>
+        <a href="esg-ai-diagnostic.html" class="block px-4 py-3 rounded-lg border border-slate-300 font-semibold text-center">V1.0 基礎版</a>
+      </div>
+    </div>
+
+    <div class="mb-8">
+      <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">行銷管理系統</h2>
+      <div class="space-y-3">
+        <a href="daxin-marketing.html" class="block px-4 py-3 rounded-lg bg-white border border-slate-200 shadow-sm hover:border-slate-300">
+          <div class="font-semibold">大心整合行銷 — AI 行銷管理系統</div>
+          <div class="text-sm text-slate-500">多品牌客戶資料庫、AI 文案產出、季度戰役看板、內容排程與 CRM</div>
+        </a>
+      </div>
+      <p class="text-xs text-slate-400 mt-2">作品集展示：Demo 模式，品牌皆為虛構示範資料，重新整理會還原。完整版含 Cloudflare Workers + D1 後端與會員系統，部署步驟見 <a href="https://github.com/shulingmarketing-svg/toolbox/blob/main/daxin-marketing/DEPLOY.md" class="underline">DEPLOY.md</a>。</p>
+    </div>
+
+    <div>
+      <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wide mb-3">抽獎工具</h2>
+      <div class="space-y-3">
+        <a href="raffle-tool.html" class="block px-4 py-3 rounded-lg bg-white border border-slate-200 shadow-sm hover:border-slate-300">
+          <div class="font-semibold">會員抽獎工具</div>
+          <div class="text-sm text-slate-500">匯入 Excel 會員名單（電話／姓名／Email），自動篩選抽獎資格，設定獎項名額與條件後隨機抽獎</div>
+        </a>
+      </div>
+    </div>
+  </div>
+</body>
+</html>

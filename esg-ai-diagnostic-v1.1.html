@@ -1,0 +1,711 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESG AI 智能成熟度診斷系統 V1.1 顧問級版本</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+  .option-btn.selected { background-color: #16a34a; color: white; border-color: #16a34a; }
+  .ms-btn.selected { background-color: #2563eb; color: white; border-color: #2563eb; }
+  @media print { .no-print { display: none !important; } }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+<div id="app" class="max-w-4xl mx-auto px-4 py-8"></div>
+
+<script>
+/* =========================================================
+   ESG AI 智能成熟度診斷系統 V1.1 顧問級版本
+   依據 GRI Standards 2021 / IFRS S1 / IFRS S2 / TCFD /
+   雙重重大性（Double Materiality）/ 台灣永續發展實務守則
+   ========================================================= */
+
+/* ===================== 基本資料題 ===================== */
+const basicQuestions = [
+  { id:'q1', title:'Q1 公司產業類別', options:['製造業','農企業','食品加工業','零售業','服務業','科技業','物流運輸業','其他'] },
+  { id:'q2', title:'Q2 員工人數', options:['1-10人','11-50人','51-100人','101-500人','500人以上'] },
+  { id:'q3', title:'Q3 年營業額', options:['1000萬以下','1000萬~5000萬','5000萬~1億','1億~10億','10億以上'] },
+  { id:'q4', title:'Q4 是否出口產品？', options:['是','否'] },
+  { id:'q5', title:'Q5 是否為大型企業供應商？', options:['是','否','不確定'] },
+];
+
+const scaleOptions = [
+  { label:'已完成', value:3 },
+  { label:'執行中', value:2 },
+  { label:'規劃中', value:1 },
+  { label:'尚未開始', value:0 },
+];
+
+/* code, 題目, weight(5=關鍵A / 3=核心B / 1=基礎C), GRI對應 */
+const E = [
+  ['E1','是否完成組織溫室氣體盤查？',5,'GRI 305-1 / 305-2 / 305-3'],
+  ['E2','是否建立能源使用統計制度？',3,'GRI 302'],
+  ['E3','是否追蹤年度用電量？',1,'GRI 302'],
+  ['E4','是否設定節能目標？',3,'-'],
+  ['E5','是否設定減碳目標？',5,'GRI 302 / GRI 305'],
+  ['E6','是否評估氣候變遷風險？',5,'GRI 201-2'],
+  ['E7','是否監測用水量？',1,'GRI 303'],
+  ['E8','是否有廢棄物管理措施？',3,'GRI 306'],
+  ['E9','是否進行綠色採購？',1,'-'],
+  ['E10','是否使用再生能源？',3,'GRI 302'],
+];
+
+const S = [
+  ['S1','是否提供勞健保？',3,'GRI 401'],
+  ['S2','是否有職業安全衛生制度？',5,'GRI 403'],
+  ['S3','是否定期教育訓練？',3,'GRI 404'],
+  ['S4','是否有員工績效考核制度？',1,'GRI 404'],
+  ['S5','是否有員工意見反映管道？',1,'GRI 2-30'],
+  ['S6','是否定期進行員工滿意度調查？',1,'-'],
+  ['S7','是否推動職場多元平等措施？',3,'GRI 405'],
+  ['S8','是否有客戶個資保護制度？',3,'GRI 418'],
+  ['S9','是否有客戶滿意度調查？',1,'-'],
+  ['S10','是否參與社區公益活動？',1,'GRI 413'],
+];
+
+const G = [
+  ['G1','是否指定ESG負責人？',5,'GRI 2-12'],
+  ['G2','是否成立ESG推動小組？',3,'GRI 2-12'],
+  ['G3','高階主管是否參與ESG決策？',5,'GRI 2-12 / 2-13'],
+  ['G4','是否制定ESG政策？',3,'GRI 2-23'],
+  ['G5','是否建立誠信經營規範？',3,'GRI 205'],
+  ['G6','是否建立風險管理制度？',5,'GRI 2-12 / 2-13'],
+  ['G7','是否定期檢討ESG績效？',3,'GRI 2-13'],
+  ['G8','是否揭露ESG資訊？',3,'GRI 2-3'],
+  ['G9','是否建立利害關係人溝通機制？',3,'GRI 2-29'],
+  ['G10','是否進行供應商ESG管理？',3,'GRI 308 / 414'],
+  ['G11','是否將ESG納入企業策略？',5,'GRI 2-22'],
+  ['G12','是否有永續發展目標？',3,'GRI 2-22'],
+  ['G13','是否定期向管理階層報告ESG成果？',1,'GRI 2-13'],
+  ['G14','是否開始準備永續報告書？',1,'GRI 2-1 / 2-2'],
+];
+
+/* 利害關係人成熟度模組（新增，權重15分） */
+const ST = [
+  ['ST1','是否辨識利害關係人？',1,'GRI 2-29'],
+  ['ST2','是否建立利害關係人清單？',1,'GRI 2-29'],
+  ['ST3','是否進行問卷調查？',1,'GRI 2-29'],
+  ['ST4','是否建立溝通管道？',1,'GRI 2-29'],
+  ['ST5','是否追蹤回應結果？',1,'GRI 2-29'],
+];
+
+const stLevels = [
+  { min:0, max:3, name:'Level 1 無管理' },
+  { min:4, max:7, name:'Level 2 已辨識' },
+  { min:8, max:11, name:'Level 3 已溝通' },
+  { min:12, max:15, name:'Level 4 已整合決策' },
+];
+
+/* 氣候風險細項（IFRS S2 多選） */
+const climateRiskItems = ['颱風','淹水','缺水','缺電'];
+const climateOppItems = ['綠色產品','綠色供應鏈'];
+
+/* 雙重重大性議題 */
+const materialityTopics = [
+  '碳排放與氣候變遷','能源管理','廢棄物與循環經濟','職業安全衛生',
+  '人才發展與訓練','多元、平等與包容','供應鏈管理','公司治理與誠信經營',
+];
+
+/* 成熟度分級 */
+const levels = [
+  { min:0, max:25, name:'Level 1 起步階段', traits:['ESG認知不足','無專責人員','無管理制度'],
+    advice:['指定ESG窗口','建立能源統計','完成基礎教育訓練'] },
+  { min:26, max:50, name:'Level 2 建置階段', traits:['已有部分制度','開始碳盤查規劃'],
+    advice:['完成碳盤查','建立供應商管理','制定ESG政策'] },
+  { min:51, max:75, name:'Level 3 管理階段', traits:['已有ESG制度','已進行績效追蹤'],
+    advice:['建立利害關係人機制','發展永續KPI','強化資訊揭露'] },
+  { min:76, max:100, name:'Level 4 領先階段', traits:['ESG融入策略','已建立管理系統'],
+    advice:['導入TCFD','發布永續報告書','建立供應鏈減碳計畫'] },
+];
+
+/* 產業別權重模型（E/S/G 百分比） */
+const industryWeights = {
+  '製造業':        { E:0.40, S:0.25, G:0.35, focus:['碳盤查','能源管理','廢棄物管理'] },
+  '農企業':        { E:0.35, S:0.30, G:0.35, focus:['水資源管理','農藥管理','生物多樣性'] },
+  '食品加工業':     { E:0.30, S:0.35, G:0.35, focus:['食品安全','供應鏈管理','能源使用'] },
+  '科技業':        { E:0.25, S:0.25, G:0.50, focus:['資訊安全','個資保護','公司治理'] },
+  '零售業':        { E:0.30, S:0.30, G:0.40, focus:['包裝減量','供應商管理','顧客個資保護'] },
+  '服務業':        { E:0.30, S:0.30, G:0.40, focus:['能源使用','員工培訓','資訊揭露'] },
+  '物流運輸業':     { E:0.35, S:0.30, G:0.35, focus:['車隊碳排','駕駛安全','供應商管理'] },
+  '其他':          { E:0.30, S:0.30, G:0.40, focus:['基礎ESG制度建立'] },
+};
+
+const industryPlans = {
+  '製造業': ['完成製程能耗盤查','建立節能設備改善計畫','推動供應商ESG自評','導入循環經濟物料管理','建立碳足跡盤查試算','設定中期減碳目標','強化職安衛管理系統','建立綠色採購清單','發布內部ESG季報','導入再生能源評估','完成GHG盤查書面化','籌備永續報告書初稿'],
+  '農企業': ['建立農藥與肥料使用紀錄','推動土地與水資源管理計畫','評估氣候風險對產量影響','建立農產品溯源機制','推動友善環境耕作措施','建立員工安全衛生規範','評估有機/永續認證可行性','建立供應鏈合作農戶輔導','設定減碳/減塑目標','強化社區合作關係','建立ESG基礎資料庫','籌備永續報告書初稿'],
+  '食品加工業': ['建立食品安全與品質管理制度','推動節水與廢水管理計畫','建立原物料供應商管理機制','評估包裝減塑與循環方案','設定能源使用效率目標','強化員工衛生教育訓練','建立食品溯源系統','推動綠色採購原料比例','設定減碳目標與行動方案','建立客戶滿意度調查機制','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '零售業': ['建立門市能源使用統計','推動包裝減量與循環措施','建立供應商社會責任規範','設定用電與用水節能目標','強化員工教育訓練制度','建立顧客個資保護機制','推動在地採購與公益合作','建立廢棄物減量計畫','設定中期ESG目標','強化資訊揭露透明度','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '服務業': ['建立辦公室能源使用統計','推動數位化減紙作業','建立員工福利與培訓制度','強化客戶資料保護機制','設定碳排放盤查範圍','建立供應商評選ESG準則','推動公益與社區參與計畫','建立員工滿意度調查機制','設定ESG管理目標','強化高階主管ESG決策參與','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '科技業': ['建立資料中心能源使用統計','推動綠色軟硬體採購','建立資安與客戶資料保護制度','設定碳中和路徑與目標','建立供應鏈ESG盡職調查','推動遠距/彈性工作節能措施','強化員工多元平等措施','建立利害關係人溝通機制','導入TCFD氣候風險評估','設定再生能源使用比例','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '物流運輸業': ['建立車隊油耗與碳排統計','推動低碳/電動車隊轉型評估','建立倉儲能源管理制度','設定運輸路線優化節能目標','強化駕駛人員安全教育訓練','建立供應商與委外商管理機制','推動包裝減量與回收措施','建立客戶服務滿意度調查','設定中期減碳目標','強化氣候風險韌性評估','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '其他': ['指定ESG專責人員','建立基礎能源與用水統計','設定短期節能減碳目標','建立員工教育訓練制度','建立供應商管理機制','強化客戶與資訊安全保護','建立利害關係人溝通管道','設定中期ESG目標','強化資訊揭露透明度','建立風險管理制度','彙整ESG關鍵指標','籌備永續報告書初稿'],
+};
+
+/* ===================== 流程結構 ===================== */
+const sections = [
+  { key:'basic', title:'企業基本資料', items: basicQuestions, type:'basic' },
+  { key:'E', title:'Environment（環境）', items: E, type:'scale' },
+  { key:'S', title:'Social（社會）', items: S, type:'scale' },
+  { key:'G', title:'Governance（治理）', items: G, type:'scale' },
+  { key:'ST', title:'利害關係人成熟度模組（新增 15分）', items: ST, type:'scale' },
+  { key:'climateRisk', title:'IFRS S2 氣候風險辨識（可多選）', items: climateRiskItems, type:'multiselect', storeKey:'climateRisks' },
+  { key:'climateOpp', title:'IFRS S2 氣候機會評估（可多選）', items: climateOppItems, type:'multiselect', storeKey:'climateOpps' },
+  { key:'materiality', title:'雙重重大性評估（Double Materiality）', items: materialityTopics, type:'materiality' },
+];
+
+let step = 0;
+let answers = {};
+let multiAnswers = { climateRisks: [], climateOpps: [] };
+let materialityAnswers = {}; // topic -> {financial, impact}
+let view = 'form'; // 'form' | 'history' | 'historyDetail'
+let historyList = [];
+let historyDetail = null;
+let reportSaved = false;
+const API_BASE = '/api';
+
+/* ===================== 後端儲存／歷史紀錄 ===================== */
+async function saveSubmission(reportPayload) {
+  try {
+    await fetch(`${API_BASE}/submissions`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ answers, multiAnswers, materialityAnswers, report: reportPayload }),
+    });
+  } catch (e) {
+    console.warn('儲存診斷紀錄失敗（可能未啟動後端伺服器）', e);
+  }
+}
+
+async function loadHistory() {
+  try {
+    const res = await fetch(`${API_BASE}/submissions`);
+    historyList = res.ok ? await res.json() : [];
+  } catch (e) {
+    historyList = [];
+  }
+}
+
+async function loadHistoryDetail(id) {
+  try {
+    const res = await fetch(`${API_BASE}/submissions/${id}`);
+    historyDetail = res.ok ? await res.json() : null;
+  } catch (e) {
+    historyDetail = null;
+  }
+}
+
+/* ===================== 渲染 ===================== */
+function render() {
+  const app = document.getElementById('app');
+  if (view === 'history') {
+    app.innerHTML = renderHistoryList();
+    bindHistoryListEvents();
+    return;
+  }
+  if (view === 'historyDetail') {
+    app.innerHTML = renderHistoryDetail();
+    bindHistoryDetailEvents();
+    return;
+  }
+  if (step < sections.length) {
+    app.innerHTML = renderSection(sections[step]);
+    bindSectionEvents(sections[step]);
+  } else {
+    const scores = computeScores();
+    app.innerHTML = renderReport();
+    bindReportEvents();
+    drawRadar();
+    drawMaterialityChart();
+    if (!reportSaved) {
+      saveSubmission({ total: scores.total, levelName: scores.level.name, industry: scores.industry });
+      reportSaved = true;
+    }
+  }
+}
+
+function renderHistoryList() {
+  const rows = historyList.map(r => `
+    <tr class="border-b">
+      <td class="py-2">${r.id}</td>
+      <td>${r.company_name || '-'}</td>
+      <td>${r.industry || '-'}</td>
+      <td>${r.employee_count || '-'}</td>
+      <td>${r.created_at}</td>
+      <td><button data-id="${r.id}" class="viewHistoryBtn text-blue-600 underline">查看</button></td>
+    </tr>`).join('');
+  return `
+    <h1 class="text-2xl font-bold mb-1 text-center">歷史診斷紀錄</h1>
+    <p class="text-center text-slate-400 mb-6">資料來源：後端 SQLite 資料庫</p>
+    <div class="bg-white rounded-xl shadow-sm p-5 mb-6 overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead><tr class="text-left border-b"><th class="py-2">#</th><th>公司</th><th>產業</th><th>員工數</th><th>建立時間</th><th>操作</th></tr></thead>
+        <tbody>${rows || '<tr><td colspan="6" class="py-4 text-center text-slate-400">尚無紀錄，或後端伺服器未啟動</td></tr>'}</tbody>
+      </table>
+    </div>
+    <button id="backToFormBtn" class="px-5 py-2 rounded-lg border border-slate-300">返回診斷問卷</button>
+  `;
+}
+
+function renderHistoryDetail() {
+  if (!historyDetail) return `<p class="text-center text-slate-400 mb-6">找不到紀錄</p><button id="backToHistoryBtn" class="px-5 py-2 rounded-lg border border-slate-300">返回列表</button>`;
+  const r = historyDetail.report || {};
+  return `
+    <h1 class="text-2xl font-bold mb-1 text-center">診斷紀錄 #${historyDetail.id}</h1>
+    <p class="text-center text-slate-500 mb-6">產業：${historyDetail.industry||'-'}　建立時間：${historyDetail.created_at}</p>
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6 text-center">
+      <p class="text-slate-500 mb-1">ESG成熟度總分</p>
+      <p class="text-5xl font-bold text-green-600 mb-2">${r.total ?? '-'}<span class="text-xl text-slate-400">/100</span></p>
+      <p class="text-xl font-semibold">${r.levelName ?? ''}</p>
+    </div>
+    <button id="backToHistoryBtn" class="px-5 py-2 rounded-lg border border-slate-300">返回列表</button>
+  `;
+}
+
+function bindHistoryListEvents() {
+  document.querySelectorAll('.viewHistoryBtn').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      await loadHistoryDetail(btn.dataset.id);
+      view = 'historyDetail';
+      render();
+    });
+  });
+  document.getElementById('backToFormBtn').addEventListener('click', () => { view = 'form'; render(); });
+}
+
+function bindHistoryDetailEvents() {
+  document.getElementById('backToHistoryBtn').addEventListener('click', () => { view = 'history'; render(); });
+}
+
+function renderProgress() {
+  const total = sections.length;
+  return `<div class="flex items-center gap-1 mb-6 no-print">
+    ${sections.map((s,i)=>`<div class="flex-1 h-2 rounded ${i<=step?'bg-green-600':'bg-slate-200'}"></div>`).join('')}
+  </div>`;
+}
+
+function isSectionComplete(section) {
+  if (section.type === 'basic') return section.items.every(it => answers[it.id] !== undefined);
+  if (section.type === 'scale') return section.items.every(it => answers[it[0]] !== undefined);
+  if (section.type === 'multiselect') return true; // optional, can be empty
+  if (section.type === 'materiality') return section.items.every(t => materialityAnswers[t] && materialityAnswers[t].financial && materialityAnswers[t].impact);
+  return true;
+}
+
+function renderSection(section) {
+  let itemsHtml = '';
+
+  if (section.type === 'basic') {
+    itemsHtml = `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
+      <p class="font-semibold mb-3">公司名稱（選填）</p>
+      <input id="companyNameInput" type="text" value="${answers.companyName || ''}" placeholder="請輸入公司名稱"
+        class="w-full border border-slate-300 rounded-lg px-3 py-2 text-sm" />
+    </div>` + section.items.map(({id,title,options}) => {
+      const current = answers[id];
+      return `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
+        <p class="font-semibold mb-3">${title}</p>
+        <div class="flex flex-wrap gap-2">
+          ${options.map(opt => `<button data-qid="${id}" data-val="${opt}" class="option-btn px-4 py-2 rounded-lg border text-sm border-slate-300 hover:border-green-500 ${current===opt?'selected':''}">${opt}</button>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  } else if (section.type === 'scale') {
+    itemsHtml = section.items.map(([code, text, weight, gri]) => {
+      const current = answers[code];
+      const weightLabel = weight===5 ? '<span class="text-xs text-red-600 font-semibold">關鍵指標 ×5</span>' : weight===3 ? '<span class="text-xs text-amber-600 font-semibold">核心指標 ×3</span>' : '<span class="text-xs text-slate-400 font-semibold">基礎指標 ×1</span>';
+      return `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
+        <div class="flex justify-between items-start mb-2">
+          <p class="font-semibold">${code} ${text}</p>
+          ${weightLabel}
+        </div>
+        ${gri && gri!=='-' ? `<p class="text-xs text-slate-400 mb-3">對應 ${gri}</p>` : '<div class="mb-3"></div>'}
+        <div class="flex flex-wrap gap-2">
+          ${scaleOptions.map(opt => `<button data-qid="${code}" data-val="${opt.value}" class="option-btn px-4 py-2 rounded-lg border text-sm border-slate-300 hover:border-green-500 ${current===opt.value?'selected':''}">${opt.label}（${opt.value}）</button>`).join('')}
+        </div>
+      </div>`;
+    }).join('');
+  } else if (section.type === 'multiselect') {
+    const storeKey = section.storeKey;
+    const current = multiAnswers[storeKey] || [];
+    itemsHtml = `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
+      <div class="flex flex-wrap gap-2">
+        ${section.items.map(opt => `<button data-store="${storeKey}" data-val="${opt}" class="ms-btn px-4 py-2 rounded-lg border text-sm border-slate-300 hover:border-blue-500 ${current.includes(opt)?'selected':''}">${opt}</button>`).join('')}
+      </div>
+      <p class="text-xs text-slate-400 mt-3">可多選，若無相關情況可不選擇後直接下一步</p>
+    </div>`;
+  } else if (section.type === 'materiality') {
+    itemsHtml = section.items.map(topic => {
+      const cur = materialityAnswers[topic] || {};
+      const scaleVals = [1,2,3,4,5];
+      const row = (dim, label) => `
+        <p class="text-sm text-slate-500 mt-2 mb-1">${label}</p>
+        <div class="flex flex-wrap gap-2">
+          ${scaleVals.map(v => `<button data-topic="${topic}" data-dim="${dim}" data-val="${v}" class="option-btn px-3 py-1.5 rounded-lg border text-sm border-slate-300 hover:border-green-500 ${cur[dim]===v?'selected':''}">${v}</button>`).join('')}
+        </div>`;
+      return `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
+        <p class="font-semibold mb-1">${topic}</p>
+        ${row('financial','財務重大性（對成本/營收/投資/客戶之影響程度，1低-5高）')}
+        ${row('impact','影響重大性（企業對環境/員工/社區/客戶之影響程度，1低-5高）')}
+      </div>`;
+    }).join('');
+  }
+
+  const canNext = isSectionComplete(section);
+
+  return `
+    <div class="flex justify-end mb-2 no-print">
+      <button id="historyBtn" class="text-sm text-blue-600 underline">查看歷史紀錄</button>
+    </div>
+    <h1 class="text-2xl font-bold mb-1 text-center">ESG AI 智能成熟度診斷系統</h1>
+    <p class="text-center text-slate-500 mb-6">V1.1 顧問級版本</p>
+    ${renderProgress()}
+    <h2 class="text-xl font-bold mb-4">${section.title}</h2>
+    ${itemsHtml}
+    <div class="flex justify-between mt-6 no-print">
+      <button id="prevBtn" class="px-5 py-2 rounded-lg border border-slate-300 ${step===0?'opacity-40 cursor-not-allowed':''}" ${step===0?'disabled':''}>上一步</button>
+      <button id="nextBtn" class="px-5 py-2 rounded-lg bg-green-600 text-white ${canNext?'':'opacity-40 cursor-not-allowed'}" ${canNext?'':'disabled'}>${step===sections.length-1?'產生顧問級診斷報告':'下一步'}</button>
+    </div>
+  `;
+}
+
+function bindSectionEvents(section) {
+  const companyNameInput = document.getElementById('companyNameInput');
+  if (companyNameInput) {
+    companyNameInput.addEventListener('input', () => { answers.companyName = companyNameInput.value; });
+  }
+  document.querySelectorAll('.option-btn[data-qid]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qid = btn.dataset.qid;
+      const raw = btn.dataset.val;
+      const val = isNaN(raw) ? raw : Number(raw);
+      answers[qid] = val;
+      render();
+    });
+  });
+  document.querySelectorAll('.ms-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.store;
+      const val = btn.dataset.val;
+      const arr = multiAnswers[key] || (multiAnswers[key] = []);
+      const idx = arr.indexOf(val);
+      if (idx >= 0) arr.splice(idx,1); else arr.push(val);
+      render();
+    });
+  });
+  document.querySelectorAll('.option-btn[data-topic]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const topic = btn.dataset.topic, dim = btn.dataset.dim, val = Number(btn.dataset.val);
+      if (!materialityAnswers[topic]) materialityAnswers[topic] = {};
+      materialityAnswers[topic][dim] = val;
+      render();
+    });
+  });
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const historyBtn = document.getElementById('historyBtn');
+  if (prevBtn) prevBtn.addEventListener('click', () => { if (step>0) { step--; render(); } });
+  if (nextBtn && !nextBtn.disabled) nextBtn.addEventListener('click', () => { step++; render(); });
+  if (historyBtn) historyBtn.addEventListener('click', async () => { await loadHistory(); view = 'history'; render(); });
+}
+
+/* ===================== 計分邏輯 ===================== */
+function weightedScore(items) {
+  let raw = 0, max = 0;
+  items.forEach(([code,,weight]) => {
+    const v = answers[code] ?? 0;
+    raw += v * weight;
+    max += 3 * weight;
+  });
+  return { raw, max, pct: max ? Math.round(raw/max*100) : 0 };
+}
+
+function computeScores() {
+  const eW = weightedScore(E);
+  const sW = weightedScore(S);
+  const gW = weightedScore(G);
+  const stRaw = ST.reduce((a,[c])=>a + (answers[c] ?? 0), 0); // max 15
+
+  const industry = answers['q1'] || '其他';
+  const weights = industryWeights[industry] || industryWeights['其他'];
+
+  const total = Math.round(eW.pct * weights.E + sW.pct * weights.S + gW.pct * weights.G);
+  const level = levels.find(l => total >= l.min && total <= l.max) || levels[levels.length-1];
+
+  const stLevel = stLevels.find(l => stRaw >= l.min && stRaw <= l.max) || stLevels[0];
+
+  const climateRiskPct = Math.round((multiAnswers.climateRisks.length / climateRiskItems.length) * 100);
+  const climateOppPct = Math.round((multiAnswers.climateOpps.length / climateOppItems.length) * 100);
+
+  return {
+    eW, sW, gW, stRaw, stLevel, total, level, industry, weights,
+    climateRiskPct, climateOppPct,
+    envPct: eW.pct, socPct: sW.pct, govPct: gW.pct,
+  };
+}
+
+function buildIFRS_S1(scores) {
+  const v = (code) => (answers[code] ?? 0) / 3 * 100;
+  const governance = Math.round((v('G1') + v('G3')) / 2);
+  const strategy = Math.round((v('G11') + v('G4')) / 2);
+  const riskMgmt = Math.round((v('G6') + v('E6')) / 2);
+  const metrics = Math.round((v('G12') + v('E5')) / 2);
+  const overall = Math.round((governance + strategy + riskMgmt + metrics) / 4);
+  return { governance, strategy, riskMgmt, metrics, overall };
+}
+
+function buildIFRS_S2(scores) {
+  const v = (code) => (answers[code] ?? 0) / 3 * 100;
+  const govClimate = v('G3');
+  const climateStrategy = v('E5');
+  const climateRisk = scores.climateRiskPct;
+  const climateOpp = scores.climateOppPct;
+  const overall = Math.round((govClimate + climateStrategy + climateRisk + climateOpp) / 4);
+  return { govClimate, climateStrategy, climateRisk, climateOpp, overall };
+}
+
+function buildGRIReadiness(scores) {
+  const griItems = [...E, ...S, ...G].filter(i => i[3] && i[3] !== '-');
+  const { raw, max } = griItems.reduce((acc,[code,,weight]) => {
+    const v = answers[code] ?? 0;
+    acc.raw += v * weight; acc.max += 3 * weight; return acc;
+  }, { raw:0, max:0 });
+  return max ? Math.round(raw/max*100) : 0;
+}
+
+function buildRiskRanking() {
+  const allItems = [...E.map(i=>['E',...i]), ...S.map(i=>['S',...i]), ...G.map(i=>['G',...i]), ...ST.map(i=>['ST',...i])];
+  const ranked = allItems.map(([cat, code, text, weight]) => {
+    const v = answers[code] ?? 0;
+    return { cat, code, text, weight, value:v, riskScore: weight * (3 - v) };
+  }).filter(i => i.riskScore > 0).sort((a,b) => b.riskScore - a.riskScore);
+  return ranked.slice(0,5);
+}
+
+function buildPriorities() {
+  const allItems = [...E, ...S, ...G, ...ST];
+  const gaps = allItems.filter(([code]) => (answers[code] ?? 0) < 3);
+  const p1 = gaps.filter(([,,w]) => w===5).map(([code,text])=>`${code} ${text}`);
+  const p2 = gaps.filter(([,,w]) => w===3).map(([code,text])=>`${code} ${text}`);
+  const p3 = gaps.filter(([,,w]) => w===1).map(([code,text])=>`${code} ${text}`);
+  return { p1, p2, p3 };
+}
+
+function buildRoadmap(priorities, industry) {
+  const plan = industryPlans[industry] || industryPlans['其他'];
+  const day30 = priorities.p1.slice(0,3);
+  const day90 = [...priorities.p1.slice(3), ...priorities.p2.slice(0,3)];
+  const day180 = [...priorities.p2.slice(3), ...plan.slice(0,4)];
+  const day365 = [...priorities.p3, ...plan.slice(4,8), '完成永續報告書初稿並對外發布'];
+  return { day30, day90, day180, day365 };
+}
+
+function buildMaterialityMatrix() {
+  const rows = materialityTopics.map(topic => {
+    const m = materialityAnswers[topic] || { financial:0, impact:0 };
+    let quadrant;
+    const hiF = m.financial >= 4, hiI = m.impact >= 4;
+    if (hiF && hiI) quadrant = '高影響 × 高財務';
+    else if (hiI && !hiF) quadrant = '高影響 × 低財務';
+    else if (!hiI && hiF) quadrant = '低影響 × 高財務';
+    else quadrant = '低影響 × 低財務';
+    return { topic, financial:m.financial, impact:m.impact, sum: m.financial+m.impact, quadrant };
+  });
+  const top5 = [...rows].sort((a,b)=>b.sum-a.sum).slice(0,5);
+  return { rows, top5 };
+}
+
+function buildConsultantSummary(scores, ifrsS1, ifrsS2, gri, riskRanking, materiality, industry) {
+  const topRisk = riskRanking[0] ? `${riskRanking[0].code}「${riskRanking[0].text}」` : '無顯著高風險項目';
+  const topMaterial = materiality.top5[0] ? materiality.top5[0].topic : '尚待評估';
+  return `本次診斷結果顯示，貴公司（${industry}）ESG成熟度總分為 ${scores.total} 分，屬於「${scores.level.name}」。在三大支柱中，環境面向達成率為 ${scores.envPct}%，社會面向為 ${scores.socPct}%，治理面向為 ${scores.govPct}%，整體而言${scores.govPct >= scores.envPct && scores.govPct >= scores.socPct ? '治理基礎相對完整，惟環境與社會面向仍有提升空間' : '環境與社會制度已具一定基礎，惟治理機制仍待強化，尤其在風險管理與策略整合層面'}。
+
+在國際揭露框架對應方面，GRI揭露準備度為 ${gri}%，顯示企業在溫室氣體、能源、職安衛、誠信經營等議題之資料蒐集與制度化程度${gri>=70?'已相對成熟，具備發布永續報告書之基礎條件':'仍有缺口，建議優先補強碳盤查、能源管理與利害關係人溝通等關鍵指標之量化資料'}。IFRS S1一般性揭露準備度為 ${ifrsS1.overall}%，其中治理 ${ifrsS1.governance}%、策略 ${ifrsS1.strategy}%、風險管理 ${ifrsS1.riskMgmt}%、指標與目標 ${ifrsS1.metrics}%，建議優先強化董事會對ESG之監督機制與量化KPI之設定。IFRS S2氣候揭露準備度為 ${ifrsS2.overall}%，氣候治理 ${Math.round(ifrsS2.govClimate)}%、氣候策略 ${Math.round(ifrsS2.climateStrategy)}%、氣候風險辨識 ${ifrsS2.climateRisk}%、氣候機會評估 ${ifrsS2.climateOpp}%，顯示氣候相關財務揭露仍處於發展初期，建議導入TCFD架構逐步補齊情境分析與財務影響評估。
+
+利害關係人成熟度評估為「${scores.stLevel.name}」，${scores.stLevel.name.includes('Level 1')||scores.stLevel.name.includes('Level 2')?'建議優先建立正式的利害關係人清單與雙向溝通機制，作為後續重大性評估與報告書揭露之基礎':'已具備溝通機制，建議further將回應結果系統性納入決策流程，提升整合決策層級'}。
+
+雙重重大性分析顯示，「${topMaterial}」為財務與影響重大性綜合排名最高之議題，屬於企業應優先納入策略與揭露規劃之核心議題；建議管理階層針對「高影響 × 高財務」象限之議題訂定具體目標與資源配置。
+
+風險排序方面，當前最關鍵之缺口為${topRisk}，屬於關鍵指標（Level A）缺口，對企業之法遵風險、客戶/供應鏈要求及未來資本市場揭露要求均有直接影響，建議列為30天內優先處理事項。
+
+綜合而言，建議管理階層在未來12個月內，依「30天緊急補強、90天制度建置、180天系統深化、365天對外揭露」之節奏，逐步將ESG從合規導向轉型為策略導向，並以本次盤點之關鍵指標缺口、雙重重大性議題及產業特性（${(industryWeights[industry]||industryWeights['其他']).focus.join('、')}）作為資源配置之優先依據，以提升企業之永續競爭力與資本市場/供應鏈評等表現。`;
+}
+
+/* ===================== 報告渲染 ===================== */
+function renderReport() {
+  const scores = computeScores();
+  const ifrsS1 = buildIFRS_S1(scores);
+  const ifrsS2 = buildIFRS_S2(scores);
+  const gri = buildGRIReadiness(scores);
+  const riskRanking = buildRiskRanking();
+  const priorities = buildPriorities();
+  const roadmap = buildRoadmap(priorities, scores.industry);
+  const materiality = buildMaterialityMatrix();
+  const summary = buildConsultantSummary(scores, ifrsS1, ifrsS2, gri, riskRanking, materiality, scores.industry);
+
+  const listOrNone = (arr) => arr.length ? `<ul class="list-disc pl-5 space-y-1">${arr.map(i=>`<li>${i}</li>`).join('')}</ul>` : '<p class="text-slate-400">無</p>';
+  const bar = (label, pct, color='bg-green-600') => `
+    <div class="mb-2">
+      <div class="flex justify-between text-sm mb-1"><span>${label}</span><span class="font-semibold">${pct}%</span></div>
+      <div class="w-full h-2 bg-slate-100 rounded"><div class="h-2 ${color} rounded" style="width:${Math.min(100,pct)}%"></div></div>
+    </div>`;
+
+  return `
+  <div id="reportRoot">
+    <h1 class="text-2xl font-bold mb-1 text-center">ESG AI 智能成熟度診斷報告</h1>
+    <p class="text-center text-slate-400 mb-1">顧問級版本 V1.1｜依GRI 2021 / IFRS S1 / IFRS S2 / TCFD / 雙重重大性架構</p>
+    <p class="text-center text-slate-500 mb-6">產業：${scores.industry}　員工：${answers['q2']||'-'}　年營業額：${answers['q3']||'-'}</p>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6 text-center">
+      <p class="text-slate-500 mb-1">ESG成熟度總分（已依產業權重調整）</p>
+      <p class="text-5xl font-bold text-green-600 mb-2">${scores.total}<span class="text-xl text-slate-400">/100</span></p>
+      <p class="text-xl font-semibold">${scores.level.name}</p>
+      <p class="text-xs text-slate-400 mt-1">權重：環境${Math.round(scores.weights.E*100)}% / 社會${Math.round(scores.weights.S*100)}% / 治理${Math.round(scores.weights.G*100)}%</p>
+      <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400">環境(E)</p><p class="font-bold text-lg">${scores.envPct}%</p></div>
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400">社會(S)</p><p class="font-bold text-lg">${scores.socPct}%</p></div>
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400">治理(G)</p><p class="font-bold text-lg">${scores.govPct}%</p></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">ESG雷達圖</h2>
+      <canvas id="radarChart" class="max-h-80"></canvas>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">揭露準備度評估</h2>
+      ${bar('GRI Standards 2021 準備度', gri)}
+      ${bar('IFRS S1 一般性揭露準備度', ifrsS1.overall, 'bg-blue-600')}
+      ${bar('— 治理 Governance', ifrsS1.governance, 'bg-blue-300')}
+      ${bar('— 策略 Strategy', ifrsS1.strategy, 'bg-blue-300')}
+      ${bar('— 風險管理 Risk Management', ifrsS1.riskMgmt, 'bg-blue-300')}
+      ${bar('— 指標與目標 Metrics & Targets', ifrsS1.metrics, 'bg-blue-300')}
+      ${bar('IFRS S2 氣候揭露準備度', ifrsS2.overall, 'bg-purple-600')}
+      ${bar('— 氣候治理', Math.round(ifrsS2.govClimate), 'bg-purple-300')}
+      ${bar('— 氣候策略', Math.round(ifrsS2.climateStrategy), 'bg-purple-300')}
+      ${bar('— 氣候風險辨識', ifrsS2.climateRisk, 'bg-purple-300')}
+      ${bar('— 氣候機會評估', ifrsS2.climateOpp, 'bg-purple-300')}
+      <p class="text-xs text-slate-400 mt-2">已辨識氣候風險：${multiAnswers.climateRisks.length?multiAnswers.climateRisks.join('、'):'無'}　|　已評估氣候機會：${multiAnswers.climateOpps.length?multiAnswers.climateOpps.join('、'):'無'}</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">利害關係人成熟度</h2>
+      <p class="text-3xl font-bold mb-1">${scores.stRaw}<span class="text-base text-slate-400">/15</span></p>
+      <p class="font-semibold text-blue-600">${scores.stLevel.name}</p>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">雙重重大性矩陣（前五大重大議題）</h2>
+      <canvas id="materialityChart" class="max-h-80 mb-4"></canvas>
+      <table class="w-full text-sm">
+        <thead><tr class="text-left border-b"><th class="py-1">議題</th><th>財務重大性</th><th>影響重大性</th><th>象限</th></tr></thead>
+        <tbody>
+          ${materiality.top5.map(r=>`<tr class="border-b"><td class="py-1">${r.topic}</td><td>${r.financial}</td><td>${r.impact}</td><td>${r.quadrant}</td></tr>`).join('')}
+        </tbody>
+      </table>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">ESG風險排名 TOP 5（依關鍵指標權重 × 缺口程度）</h2>
+      ${riskRanking.length ? `<ol class="list-decimal pl-5 space-y-1">${riskRanking.map(r=>`<li>${r.code} ${r.text}（${r.cat}類，權重×${r.weight}，目前狀態：${scaleOptions.find(o=>o.value===r.value)?.label}）</li>`).join('')}</ol>` : '<p class="text-slate-400">目前無顯著風險缺口</p>'}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">ESG改善優先順序</h2>
+      <p class="font-semibold text-red-600 mb-1">Priority 1（關鍵指標缺口）</p>
+      ${listOrNone(priorities.p1)}
+      <p class="font-semibold text-amber-600 mt-3 mb-1">Priority 2（核心指標缺口）</p>
+      ${listOrNone(priorities.p2)}
+      <p class="font-semibold text-slate-500 mt-3 mb-1">Priority 3（基礎指標缺口）</p>
+      ${listOrNone(priorities.p3)}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">12個月 ESG Roadmap</h2>
+      <p class="font-semibold mb-1">30天</p>${listOrNone(roadmap.day30)}
+      <p class="font-semibold mt-3 mb-1">90天</p>${listOrNone(roadmap.day90)}
+      <p class="font-semibold mt-3 mb-1">180天</p>${listOrNone(roadmap.day180)}
+      <p class="font-semibold mt-3 mb-1">365天</p>${listOrNone(roadmap.day365)}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">顧問建議摘要</h2>
+      <p class="leading-relaxed whitespace-pre-line text-sm">${summary}</p>
+    </div>
+
+    <div class="flex justify-between no-print mb-10">
+      <button id="restartBtn" class="px-5 py-2 rounded-lg border border-slate-300">重新填寫</button>
+      <button id="printBtn" class="px-5 py-2 rounded-lg bg-green-600 text-white">列印 / 匯出PDF</button>
+    </div>
+  </div>
+  `;
+}
+
+function bindReportEvents() {
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    answers = {}; multiAnswers = { climateRisks:[], climateOpps:[] }; materialityAnswers = {}; step = 0; reportSaved = false; render();
+  });
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+}
+
+let radarChartInstance = null;
+function drawRadar() {
+  const scores = computeScores();
+  const ctx = document.getElementById('radarChart');
+  if (!ctx) return;
+  if (radarChartInstance) radarChartInstance.destroy();
+  radarChartInstance = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['環境','社會','治理','氣候風險辨識','利害關係人成熟度'],
+      datasets: [{
+        label: 'ESG成熟度',
+        data: [scores.envPct, scores.socPct, scores.govPct, scores.climateRiskPct, Math.round(scores.stRaw/15*100)],
+        backgroundColor: 'rgba(22,163,74,0.2)',
+        borderColor: 'rgba(22,163,74,1)',
+        pointBackgroundColor: 'rgba(22,163,74,1)',
+      }]
+    },
+    options: { scales: { r: { min:0, max:100, ticks:{ stepSize:20 } } }, plugins: { legend: { display:false } } }
+  });
+}
+
+let materialityChartInstance = null;
+function drawMaterialityChart() {
+  const ctx = document.getElementById('materialityChart');
+  if (!ctx) return;
+  if (materialityChartInstance) materialityChartInstance.destroy();
+  const data = materialityTopics.map(t => {
+    const m = materialityAnswers[t] || { financial:0, impact:0 };
+    return { x:m.financial, y:m.impact, label:t };
+  });
+  materialityChartInstance = new Chart(ctx, {
+    type: 'scatter',
+    data: {
+      datasets: [{
+        label: '重大性議題',
+        data,
+        backgroundColor: 'rgba(37,99,235,0.7)',
+        pointRadius: 6,
+      }]
+    },
+    options: {
+      scales: {
+        x: { min:0, max:5, title:{ display:true, text:'財務重大性' } },
+        y: { min:0, max:5, title:{ display:true, text:'影響重大性' } },
+      },
+      plugins: {
+        legend: { display:false },
+        tooltip: { callbacks: { label: (item) => data[item.dataIndex].label + `（財務${item.parsed.x}, 影響${item.parsed.y}）` } }
+      }
+    }
+  });
+}
+
+render();
+</script>
+</body>
+</html>

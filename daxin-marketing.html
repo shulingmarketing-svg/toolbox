@@ -1,0 +1,1130 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>大心整合行銷 — AI 行銷管理系統</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700;900&family=Noto+Serif+TC:wght@700;900&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#17140f;          /* 表格／提示等深色區塊 */
+  --ink-2:#24201a;
+  --gold:#c9974a;         /* 主金 */
+  --gold-deep:#a87830;
+  --cream:#f7f1e3;        /* 卡片米 */
+  --cream-2:#efe6d2;
+  --paper:#fdfbf6;        /* 內容底 */
+  --line:#e3d9c4;
+  --text:#2b2620;
+  --muted:#8a8072;
+  --green:#3e7d5a; --green-bg:#dcebe0;
+  --yellow:#a07816; --yellow-bg:#f5e8c4;
+  --blue:#3d6b8e;  --blue-bg:#dbe7f0;
+  --red:#b04a3a;   --red-bg:#f3ddd7;
+  --pink:#b0447a;  --pink-bg:#f3dce8;
+  --gray:#6b6b6b;  --gray-bg:#e7e4de;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Noto Sans TC',sans-serif;background:var(--paper);color:var(--text);display:flex;min-height:100vh}
+button{font-family:inherit;cursor:pointer}
+input,select,textarea{font-family:inherit;font-size:14px;padding:9px 12px;border:1px solid var(--line);border-radius:8px;background:#fff;width:100%;color:var(--text)}
+textarea{resize:vertical;min-height:80px}
+input:focus,select:focus,textarea:focus{outline:2px solid var(--gold);outline-offset:1px}
+
+/* ---------- 側欄 ---------- */
+.sidebar{width:210px;background:#E4E4E4;color:#1B2A4A;flex-shrink:0;display:flex;flex-direction:column;position:sticky;top:0;height:100vh}
+.brand{font-family:'Noto Serif TC',serif;font-size:21px;font-weight:900;padding:26px 22px 20px;letter-spacing:1px;border-bottom:1px solid #C9C9C9}
+.nav{flex:1;padding:14px 10px;overflow-y:auto}
+.nav a{display:flex;align-items:center;gap:10px;padding:11px 14px;color:#1B2A4A;text-decoration:none;font-size:14.5px;border-radius:8px;margin-bottom:2px}
+.nav a .ic{width:16px;text-align:center;opacity:.7;font-size:12px}
+.nav a:hover{background:#CFCFCF;color:#1B2A4A}
+.nav a.active{background:#C2C2C2;color:#1B2A4A;font-weight:700;box-shadow:inset 3px 0 0 var(--gold)}
+.mode-tag{margin:12px;padding:8px 10px;font-size:11.5px;border-radius:8px;background:#D6D6D6;color:#1B2A4A;line-height:1.5}
+.mode-tag b{color:#1B2A4A}
+
+/* ---------- 主區 ---------- */
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{background:#E4E4E4;color:#1B2A4A;display:flex;align-items:center;gap:14px;padding:14px 26px;border-bottom:3px solid var(--gold)}
+.topbar .num{background:var(--gold);color:var(--ink);font-weight:900;width:30px;height:30px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:15px}
+.topbar h2{font-size:18px;font-weight:700}
+.topbar .sub{margin-left:auto;font-size:13px;color:#1B2A4A;font-weight:500;opacity:.75}
+.content{padding:28px 30px;max-width:1180px}
+.page-title{font-family:'Noto Serif TC',serif;font-size:34px;font-weight:900;margin-bottom:6px}
+.page-desc{color:var(--muted);font-size:14px;margin-bottom:22px;line-height:1.6}
+
+/* ---------- 統計卡 ---------- */
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:22px}
+.stat{background:#fff;border:1px solid var(--line);border-radius:12px;padding:16px 18px;position:relative;overflow:hidden}
+.stat .label{font-size:13px;color:var(--muted);margin-bottom:6px}
+.stat .val{font-size:27px;font-weight:900}
+.stat .note{font-size:12px;margin-top:4px}
+.stat .bubble{position:absolute;right:-14px;bottom:-18px;width:64px;height:64px;border-radius:50%;opacity:.55}
+.n-green{color:var(--green)} .n-red{color:var(--red)} .n-blue{color:var(--blue)} .n-gold{color:var(--gold-deep)}
+.b-green{background:#bcd8c6} .b-cream{background:#e8d9b5} .b-red{background:#ecc4bb} .b-blue{background:#c3d5e4}
+
+/* ---------- 面板 ---------- */
+.panel{background:var(--cream);border:1px solid var(--line);border-radius:14px;padding:20px 22px;margin-bottom:20px}
+.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}
+.panel-head h3{font-size:15.5px;font-weight:700}
+.panel-head .hint{font-size:12.5px;color:var(--muted)}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+.grid4{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+.field label{display:block;font-size:12.5px;font-weight:700;margin-bottom:5px}
+.btn{background:var(--gold);color:var(--ink);border:none;border-radius:9px;padding:11px 20px;font-weight:700;font-size:14px}
+.btn:hover{background:var(--gold-deep);color:#fff}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--text)}
+.btn.small{padding:6px 12px;font-size:12.5px}
+
+/* ---------- 狀態籤 ---------- */
+.chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11.5px;font-weight:700;white-space:nowrap}
+.st-草稿中{background:var(--red-bg);color:var(--red)}
+.st-待補資料{background:var(--yellow-bg);color:var(--yellow)}
+.st-待客戶審核{background:var(--blue-bg);color:var(--blue)}
+.st-已發布{background:var(--green-bg);color:var(--green)}
+.st-緊急處理{background:var(--pink-bg);color:var(--pink)}
+.st-延後發布{background:var(--gray-bg);color:var(--gray)}
+.tagline{display:flex;gap:6px;flex-wrap:wrap;margin-top:8px}
+.tag{background:var(--cream-2);border:1px solid var(--line);border-radius:14px;padding:2px 10px;font-size:11.5px}
+
+/* ---------- 表格 ---------- */
+table{width:100%;border-collapse:collapse;background:#fff;border-radius:10px;overflow:hidden;font-size:13.5px}
+thead{background:var(--ink);color:#e9e2d4}
+th{padding:10px 12px;text-align:left;font-size:12.5px;font-weight:500}
+td{padding:11px 12px;border-bottom:1px solid #f0ead9;vertical-align:top}
+td .sub{font-size:12px;color:var(--muted);margin-top:3px}
+
+/* ---------- 品牌卡 ---------- */
+.brand-card{background:#fff;border:2px solid transparent;border-radius:12px;padding:14px 16px;margin-bottom:12px;cursor:pointer}
+.brand-card.sel{border-color:var(--green)}
+.brand-card .row{display:flex;align-items:center;gap:10px}
+.brand-card .avatar{width:32px;height:32px;border-radius:8px;color:#fff;font-weight:900;display:flex;align-items:center;justify-content:center}
+.brand-card .pct{margin-left:auto;font-weight:900;font-size:14px}
+.brand-card .bar{height:6px;border-radius:4px;background:#eee;margin-top:9px;overflow:hidden}
+.brand-card .bar i{display:block;height:100%}
+.info-card{background:#fff;border:1px solid var(--line);border-radius:11px;padding:14px 16px}
+.info-card h4{font-size:13.5px;margin-bottom:7px}
+.info-card p{font-size:12.5px;color:#5a5347;line-height:1.7}
+
+/* ---------- 看板 ---------- */
+.kanban{display:grid;grid-template-columns:repeat(6,minmax(160px,1fr));gap:12px;overflow-x:auto}
+.kcol{background:#fff;border:1px solid var(--line);border-radius:11px;padding:10px}
+.kcol h4{font-size:13px;display:flex;justify-content:space-between;margin-bottom:10px;padding:0 4px}
+.kcard{background:var(--paper);border:1px solid var(--line);border-radius:9px;padding:10px;margin-bottom:9px;font-size:12.5px}
+.kcard b{display:block;font-size:13px;margin-bottom:4px}
+.kcard .meta{color:var(--muted);font-size:11.5px;line-height:1.5}
+.kempty{border:1.5px dashed var(--line);border-radius:9px;padding:22px 0;text-align:center;color:var(--muted);font-size:12.5px}
+
+/* ---------- 月曆 ---------- */
+.cal-head{display:flex;gap:8px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.cal-head .mbtn{background:#fff;border:1px solid var(--line);border-radius:8px;padding:6px 14px;font-size:13px}
+.cal-head .mbtn.on{background:var(--ink);color:#fff}
+.legend{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:10px;overflow:hidden}
+.cal-cell{background:#fff;min-height:96px;padding:6px;font-size:12px}
+.cal-cell .d{font-weight:700;color:var(--muted);margin-bottom:4px}
+.cal-ev{border-radius:7px;padding:5px 7px;margin-bottom:5px;font-size:11px;line-height:1.45;border-left:3px solid}
+.ev-已發布{background:var(--green-bg);border-color:var(--green)}
+.ev-待補資料{background:var(--yellow-bg);border-color:var(--yellow)}
+.ev-待客戶審核{background:var(--blue-bg);border-color:var(--blue)}
+.ev-草稿中{background:var(--red-bg);border-color:var(--red)}
+.ev-緊急處理{background:var(--pink-bg);border-color:var(--pink)}
+.ev-延後發布{background:var(--gray-bg);border-color:var(--gray)}
+
+/* ---------- 產出結果 ---------- */
+.gen-out{background:#fff;border:1px solid var(--line);border-radius:11px;padding:18px;min-height:340px;font-size:13.5px;line-height:1.85;white-space:pre-wrap}
+.gen-out.empty{display:flex;align-items:center;justify-content:center;color:var(--muted);text-align:center}
+.step-flow{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;margin-bottom:18px}
+.step{background:#fff;border:1px solid var(--line);border-radius:10px;padding:12px}
+.step .no{background:var(--gold);color:var(--ink);width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:900;margin-bottom:7px}
+.step b{font-size:13px;display:block;margin-bottom:4px}
+.step p{font-size:11.5px;color:var(--muted);line-height:1.5}
+.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;padding:12px 20px;border-radius:10px;font-size:13.5px;box-shadow:0 6px 20px rgba(0,0,0,.25);opacity:0;transition:.3s;pointer-events:none;border-left:4px solid var(--gold)}
+.toast.show{opacity:1}
+
+/* ---------- 登入閘門與確認視窗 ---------- */
+.modal-bg{position:fixed;inset:0;background:rgba(20,17,12,.72);display:none;align-items:center;justify-content:center;z-index:100;padding:20px}
+.modal-bg.show{display:flex}
+.modal{background:var(--paper);border-radius:16px;padding:28px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,.4)}
+.modal h3{font-family:'Noto Serif TC',serif;font-size:22px;font-weight:900;margin-bottom:6px}
+.modal .desc{font-size:13px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.modal .field{margin-bottom:12px}
+.modal .err{color:var(--red);font-size:12.5px;margin-bottom:10px;min-height:16px}
+.modal .row{display:flex;gap:10px;margin-top:6px}
+.modal .row .btn{flex:1}
+.btn.danger{background:var(--red);color:#fff}
+.btn.danger:hover{background:#8f3a2d}
+.auth-tabs{display:flex;gap:6px;margin-bottom:16px}
+.auth-tabs button{flex:1;padding:9px;border:1px solid var(--line);background:#fff;border-radius:8px;font-size:14px;font-weight:700}
+.auth-tabs button.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.side-actions{padding:0 12px 14px;display:flex;flex-direction:column;gap:6px}
+.side-actions button{background:#D6D6D6;border:1px solid #C9C9C9;color:#1B2A4A;border-radius:8px;padding:8px;font-size:12.5px}
+.side-actions button:hover{color:#1B2A4A;border-color:var(--gold-deep);background:#CFCFCF}
+.del-x{background:none;border:none;color:var(--red);font-size:13px;padding:2px 6px;border-radius:6px}
+.del-x:hover{background:var(--red-bg)}
+
+@media (max-width:900px){
+  .sidebar{width:64px}
+  .brand{font-size:0;padding:20px 0;text-align:center}
+  .brand::after{content:"大心";font-size:16px}
+  .nav a span.txt{display:none}
+  .mode-tag{display:none}
+  .grid2,.grid3,.grid4,.step-flow{grid-template-columns:1fr}
+  .kanban{grid-template-columns:repeat(2,1fr)}
+  .content{padding:18px}
+}
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="brand">大心整合行銷</div>
+  <nav class="nav" id="nav"></nav>
+  <div class="side-actions">
+    <button onclick="downloadBackup()">⬇ 下載完整備份</button>
+    <button onclick="doLogout()" id="logoutBtn">登出</button>
+  </div>
+  <div class="mode-tag" id="modeTag"></div>
+</aside>
+
+<div class="main">
+  <div class="topbar">
+    <div class="num" id="tbNum">1</div>
+    <h2 id="tbTitle">總覽</h2>
+    <div class="sub" id="tbSub"></div>
+  </div>
+  <div class="content" id="app"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- 登入 / 註冊閘門 -->
+<div class="modal-bg" id="authGate">
+  <div class="modal">
+    <h3>大心整合行銷</h3>
+    <p class="desc" id="authDesc">請登入以進入系統。</p>
+    <div class="auth-tabs">
+      <button id="tabLogin" class="on" onclick="authTab('login')">登入</button>
+      <button id="tabReg" onclick="authTab('register')">註冊</button>
+    </div>
+    <div id="regEmailWrap" class="field" style="display:none"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">Email 信箱</label><input id="au_email" type="email" placeholder="name@example.com"></div>
+    <div class="field"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">帳號</label><input id="au_user" placeholder="至少 3 個字元"></div>
+    <div class="field"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">密碼</label><input id="au_pass" type="password" placeholder="至少 8 個字元">
+      <div style="text-align:right;margin-top:5px"><a href="javascript:void(0)" onclick="toggleForgot()" style="font-size:12px;color:var(--gold-deep)">忘記密碼？</a></div>
+    </div>
+    <div id="forgotWrap" style="display:none;background:var(--cream);border:1px solid var(--line);border-radius:10px;padding:12px;margin-bottom:12px">
+      <p style="font-size:12.5px;margin-bottom:8px;line-height:1.6">輸入你的帳號或 Email，系統會通知總管理員。管理員重設完成後，會以 Email 通知你新密碼。</p>
+      <input id="fg_id" placeholder="帳號或 Email" style="margin-bottom:8px">
+      <button class="btn small" onclick="submitForgot()">送出重設申請</button>
+      <div id="fg_msg" style="font-size:12px;color:var(--green);margin-top:8px"></div>
+    </div>
+    <div id="regCodeWrap" class="field" style="display:none"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">邀請碼（管理者有設定才需填）</label><input id="au_code" placeholder="選填"></div>
+    <div class="err" id="authErr"></div>
+    <div class="row">
+      <button class="btn" id="authBtn" onclick="submitAuth()">登入</button>
+      <button class="btn ghost" id="guestBtn" onclick="guestEnter()" style="display:none">以訪客瀏覽（Demo）</button>
+    </div>
+  </div>
+</div>
+
+<!-- 刪除確認：需帳號密碼 -->
+<div class="modal-bg" id="delModal">
+  <div class="modal">
+    <h3>確認刪除</h3>
+    <p class="desc" id="delDesc"></p>
+    <div class="field"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">帳號</label><input id="del_user"></div>
+    <div class="field"><label style="display:block;font-size:12.5px;font-weight:700;margin-bottom:5px">密碼</label><input id="del_pass" type="password"></div>
+    <div class="err" id="delErr"></div>
+    <div class="row">
+      <button class="btn ghost" onclick="closeDelete()">取消</button>
+      <button class="btn danger" onclick="performDelete()">確認刪除</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* =====================================================
+   設定：部署後把 Worker 網址填入 API_BASE 即切換為連線模式
+   例如 const API_BASE = "https://daxin-api.你的帳號.workers.dev";
+   留空字串 = Demo 模式（資料存在瀏覽器記憶體，重新整理會還原）
+===================================================== */
+const API_BASE = "";
+
+/* ---------------- Demo 種子資料（與 schema.sql 一致） ---------------- */
+const seed = {
+clients: [
+ {id:'c-shanlan',company_name:'山嵐茶業有限公司',brand_name:'山嵐茶坊',industry:'茶葉・茶飲',monthly_fee:30000,case_scale:'中案',data_completeness:85,timeline_status:'一般排程',tags:['高山茶','冷泡茶','職人焙火','送禮'],color:'#3e7d5a'},
+ {id:'c-maohai',company_name:'毛孩日常有限公司',brand_name:'毛孩日常',industry:'寵物用品',monthly_fee:25000,case_scale:'中案',data_completeness:80,timeline_status:'一般排程',tags:['天然零食','訂閱制','貓狗','社群'],color:'#2A9D8F'},
+ {id:'c-xiaoshu',company_name:'小樹文化有限公司',brand_name:'小樹書房',industry:'親子教育・繪本',monthly_fee:20000,case_scale:'小案',data_completeness:78,timeline_status:'一般排程',tags:['親子共讀','繪本訂閱','3-8 歲','週末活動'],color:'#E9911C'}
+],
+profiles: {
+ 'c-shanlan':{
+  positioning:'（虛構示範品牌）台灣高山茶專賣，自有茶園契作、職人手工焙火，主打「一年四季都有好茶喝」。從熱泡到冷泡、從自飲到送禮，讓年輕族群也能輕鬆入門。',
+  target_audience:'日常自飲線｜25-40 歲上班族、想戒手搖飲的人\n送禮線｜30-55 歲、節慶與商務送禮需求\n入門玩家線｜對茶有興趣、想學沖泡的新手',
+  content_pillars:'產地與茶園故事、焙火職人、冷泡教學、季節茶單、送禮提案。',
+  competitors:'連鎖手搖飲、超商瓶裝茶、老字號茶行、日系茶品牌。',
+  writing_restrictions:'不寫療效；以產地、品種、焙火、沖泡方式與生活情境為主；口吻溫和有質感，不過度促銷。',
+  regulation_notes:'食品廣告不得宣稱療效（如降血脂、助消化、減重）。可寫：產地、品種、焙火程度、風味、沖泡方式。上線前逐句檢查是否出現功效宣稱。',
+  platform_preferences:'IG：茶湯近拍、冷泡過程 Reels、季節限定。FB：茶園故事、送禮導購。SEO：冷泡茶做法、高山茶入門長文。'},
+ 'c-maohai':{
+  positioning:'（虛構示範品牌）寵物天然零食與用品訂閱品牌，主打成分透明、小批量生產，每月寄送一盒，讓毛孩每個月都有新驚喜。',
+  target_audience:'新手飼主線｜25-35 歲、第一次養貓狗、資訊焦慮\n資深飼主線｜30-45 歲、重視成分、願意為品質付費',
+  content_pillars:'成分透明、毛孩日常趣味、飼養知識、訂閱開箱、飼主社群互動。',
+  competitors:'量販寵物店自有品牌、進口寵物零食、寵物電商平台。',
+  writing_restrictions:'不宣稱治療或預防寵物疾病；避免「保證」「100%」等絕對用語；口吻活潑、有梗、貼近飼主日常。',
+  regulation_notes:'不得宣稱寵物食品具醫療效果。成分與產地需與包裝標示一致。避免使用未經證實的比較性廣告。',
+  platform_preferences:'IG：毛孩照片、開箱 Reels、互動投票。FB：飼主社群、訂閱優惠。SEO：新手養貓／養狗指南。'},
+ 'c-xiaoshu':{
+  positioning:'（虛構示範品牌）親子共讀繪本訂閱，每月由選書團隊挑選三本繪本，附共讀引導卡，陪家長和孩子建立睡前閱讀習慣。',
+  target_audience:'親子家庭線｜家有 3-8 歲孩子的爸媽、重視陪伴時間\n送禮線｜祖父母、親友送孩子的生日與節日禮物',
+  content_pillars:'選書理由、共讀技巧、親子日常、繪本作者故事、週末活動。',
+  competitors:'實體書店童書區、電子繪本 App、其他繪本訂閱服務。',
+  writing_restrictions:'不宣稱提升智力或保證學習成效；強調陪伴與閱讀樂趣；口吻溫暖親切。',
+  regulation_notes:'避免「提升智商」「贏在起跑點」等誇大或製造焦慮的用語。使用兒童影像需取得家長同意。',
+  platform_preferences:'FB：家長社群、選書介紹、活動報名。IG：繪本內頁、共讀日常。SEO：繪本推薦、共讀方法文章。'}
+},
+campaigns: [
+ {id:'cp-sl-q4',client_id:'c-shanlan',quarter:'2026-Q4',theme:'冬季熱茶 → 年節禮盒預購',budget:0},
+ {id:'cp-mh-q4',client_id:'c-maohai',quarter:'2026-Q4',theme:'年末訂閱優惠 → 毛孩聖誕開箱',budget:0},
+ {id:'cp-xs-q4',client_id:'c-xiaoshu',quarter:'2026-Q4',theme:'冬季共讀月 → 聖誕繪本禮盒',budget:0}
+],
+content: [
+ {id:'ct-001',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'茶園入冬：焙火職人的一天',platform:'FB+IG',status:'已發布',content_body:'從採收到焙火，帶讀者走一趟茶園的冬天。',business_goal:'建立信任',scheduled_date:'2026-11-03',published_date:'2026-11-03',value_ntd:1500,next_step:'可認列交付並追蹤成效'},
+ {id:'ct-002',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'三種焙火程度喝起來差在哪',platform:'IG',status:'待客戶審核',content_body:'輕焙、中焙、重焙茶湯對比短影音。',business_goal:'互動增長',scheduled_date:'2026-11-10',published_date:null,value_ntd:1800,next_step:'等待客戶回覆或催審'},
+ {id:'ct-003',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'冬天也能喝的冷泡茶做法',platform:'SEO',status:'草稿中',content_body:'',business_goal:'導流名單',scheduled_date:'2026-11-17',published_date:null,value_ntd:2000,next_step:'完成初稿後送審'},
+ {id:'ct-004',client_id:'c-shanlan',campaign_id:'cp-sl-q4',title:'年節禮盒搶先看',platform:'FB+IG',status:'待補資料',content_body:'禮盒視覺與價格待客戶提供。',business_goal:'轉換營收',scheduled_date:'2026-11-24',published_date:null,value_ntd:1500,next_step:'向客戶補禮盒素材後再產文'},
+ {id:'ct-005',client_id:'c-maohai',campaign_id:'cp-mh-q4',title:'這個月的盒子裡有什麼？',platform:'IG',status:'已發布',content_body:'十一月訂閱盒開箱 Reels。',business_goal:'建立信任',scheduled_date:'2026-11-05',published_date:'2026-11-05',value_ntd:1200,next_step:'可認列交付並追蹤成效'},
+ {id:'ct-006',client_id:'c-maohai',campaign_id:'cp-mh-q4',title:'年末訂閱優惠倒數',platform:'FB+IG',status:'待客戶審核',content_body:'年訂方案限時優惠。',business_goal:'轉換營收',scheduled_date:'2026-11-19',published_date:null,value_ntd:1500,next_step:'等待客戶回覆或催審'},
+ {id:'ct-007',client_id:'c-xiaoshu',campaign_id:'cp-xs-q4',title:'睡前十分鐘：共讀的三個小技巧',platform:'Facebook',status:'草稿中',content_body:'給忙碌爸媽的共讀入門。',business_goal:'建立信任',scheduled_date:'2026-11-12',published_date:null,value_ntd:1500,next_step:'完成初稿後送審'}
+],
+crm: [
+ {id:'crm-001',company_name:'山嵐茶業有限公司',contact_name:'王經理',contact_title:'行銷經理',contact_method:'Email',stage:'已成交',follow_up_status:'服務中',next_contact_date:'2026-11-20',deal_value:90000,marketing_need:'FB/IG 經營 + SEO 文章',owner:'業務 A',priority:'高',notes:'（示範資料）Q4 年節檔期為重點，禮盒素材待補。'},
+ {id:'crm-002',company_name:'小樹文化有限公司',contact_name:'林小姐',contact_title:'品牌窗口',contact_method:'LINE',stage:'提案中',follow_up_status:'提案準備中',next_contact_date:'2026-11-15',deal_value:60000,marketing_need:'FB 社群經營',owner:'PM B',priority:'一般',notes:'（示範資料）希望先做三個月試行。'}
+]
+};
+
+const STATUSES = ['草稿中','待補資料','待客戶審核','已發布','緊急處理','延後發布'];
+const state = { data: JSON.parse(JSON.stringify(seed)), selClient:'c-shanlan', calMonth:'2026-11', route:'overview' };
+const live = () => API_BASE !== "";
+
+/* ---------------- 會員認證 ---------------- */
+let TOKEN = null; try{ TOKEN = localStorage.getItem('daxin_token'); }catch(e){}
+let authMode = 'login';
+const authHeaders = () => TOKEN ? {'Authorization':'Bearer '+TOKEN} : {};
+
+function authTab(mode){
+  authMode = mode;
+  $('#tabLogin').classList.toggle('on', mode==='login');
+  $('#tabReg').classList.toggle('on', mode==='register');
+  $('#regEmailWrap').style.display = mode==='register'?'block':'none';
+  $('#regCodeWrap').style.display = mode==='register'?'block':'none';
+  $('#authBtn').textContent = mode==='register'?'註冊':'登入';
+  $('#authErr').textContent = '';
+}
+function showGate(){
+  $('#authGate').classList.add('show');
+  if(!live()){
+    $('#authDesc').textContent = 'Demo 模式：尚未連接後端，註冊登入需部署後才生效。可先以訪客身分瀏覽介面。';
+    $('#guestBtn').style.display = 'block';
+  }else{
+    $('#authDesc').textContent = '請登入以進入系統。首次使用請先切換到「註冊」建立帳號。';
+  }
+}
+function hideGate(){ $('#authGate').classList.remove('show'); }
+function guestEnter(){
+  hideGate();
+  state.me = {username:'admin（示範）', email:'admin@example.com', is_admin:true};
+  state.admin = {users:[
+    {id:'u-demo-admin',email:'admin@example.com',username:'admin',is_admin:1,created_at:'（示範）'},
+    {id:'u-demo-staff',email:'staff@example.com',username:'staffA',is_admin:0,created_at:'（示範）'}],
+    resets:[{id:'pr-demo',user_id:'u-demo-staff',username:'staffA',email:'staff@example.com',requested_at:'2026-07-07 09:12'}]};
+  render();
+  toast('訪客瀏覽中：Demo 資料，重新整理會還原');
+}
+function toggleForgot(){
+  const w = $('#forgotWrap');
+  w.style.display = w.style.display==='none'?'block':'none';
+}
+async function submitForgot(){
+  const id = $('#fg_id').value.trim();
+  if(!id) return $('#fg_msg').textContent = '請輸入帳號或 Email';
+  if(!live()) return $('#fg_msg').textContent = 'Demo 模式無後端；部署後此功能會通知管理員。';
+  try{
+    const res = await fetch(API_BASE+'/api/auth/forgot',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({identifier:id})});
+    const data = await res.json();
+    $('#fg_msg').textContent = data.message || data.error || '已送出';
+  }catch(e){ $('#fg_msg').textContent = '連線失敗：'+e.message; }
+}
+
+async function submitAuth(){
+  const err = $('#authErr'); err.textContent = '';
+  if(!live()){ err.textContent = 'Demo 模式無後端，請以訪客瀏覽，或先完成部署。'; return; }
+  const username = $('#au_user').value.trim(), password = $('#au_pass').value;
+  try{
+    if(authMode==='register'){
+      const res = await fetch(API_BASE+'/api/auth/register',{method:'POST',headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({email:$('#au_email').value.trim(),username,password,register_code:$('#au_code').value.trim()})});
+      const data = await res.json();
+      if(!res.ok){ err.textContent = data.error||'註冊失敗'; return; }
+      toast('註冊成功，請直接登入'); authTab('login'); return;
+    }
+    const res = await fetch(API_BASE+'/api/auth/login',{method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({username,password})});
+    const data = await res.json();
+    if(!res.ok){ err.textContent = data.error||'登入失敗'; return; }
+    TOKEN = data.token;
+    try{ localStorage.setItem('daxin_token', TOKEN); }catch(e){}
+    state.me = {username:data.username, email:data.email, is_admin:!!data.is_admin};
+    hideGate(); toast('歡迎回來，'+data.username+(data.is_admin?'（總管理員）':''));
+    await apiLoad(); render();
+  }catch(e){ err.textContent = '連線失敗：'+e.message; }
+}
+async function doLogout(){
+  if(live() && TOKEN){ try{ await fetch(API_BASE+'/api/auth/logout',{method:'POST',headers:authHeaders()}); }catch(e){} }
+  TOKEN = null; try{ localStorage.removeItem('daxin_token'); }catch(e){}
+  showGate(); toast('已登出');
+}
+
+/* ---------------- 刪除（需帳密二次確認） ---------------- */
+let pendingDelete = null;
+function askDelete(type, id, label){
+  pendingDelete = {type, id, label};
+  $('#delDesc').innerHTML = `即將刪除：<b>${esc(label)}</b>${type==='client'?'<br><span style="color:var(--red)">⚠ 將連同該品牌的所有內容、戰役、品牌 DNA 一併刪除，無法復原。</span>':'<br>此動作無法復原。'}<br>請輸入你的帳號與密碼確認。`;
+  $('#del_user').value=''; $('#del_pass').value=''; $('#delErr').textContent='';
+  $('#delModal').classList.add('show');
+}
+function closeDelete(){ $('#delModal').classList.remove('show'); pendingDelete=null; }
+async function performDelete(){
+  if(!pendingDelete) return;
+  const username = $('#del_user').value.trim(), password = $('#del_pass').value;
+  const err = $('#delErr');
+  if(!username || !password){ err.textContent='請輸入帳號與密碼'; return; }
+  const {type, id, label} = pendingDelete;
+  const paths = {content:'/api/content/', crm:'/api/crm/', campaign:'/api/campaigns/', client:'/api/clients/'};
+  if(live()){
+    try{
+      const res = await fetch(API_BASE+paths[type]+id,{method:'DELETE',
+        headers:{'Content-Type':'application/json',...authHeaders()},
+        body:JSON.stringify({username,password})});
+      const data = await res.json();
+      if(!res.ok){ err.textContent = data.error||'刪除失敗'; return; }
+    }catch(e){ err.textContent='連線失敗：'+e.message; return; }
+  }
+  // 本地資料同步移除
+  const d = state.data;
+  if(type==='content') d.content = d.content.filter(x=>x.id!==id);
+  if(type==='crm') d.crm = d.crm.filter(x=>x.id!==id);
+  if(type==='campaign') d.campaigns = d.campaigns.filter(x=>x.id!==id);
+  if(type==='client'){
+    d.content = d.content.filter(x=>x.client_id!==id);
+    d.campaigns = d.campaigns.filter(x=>x.client_id!==id);
+    delete d.profiles[id];
+    d.clients = d.clients.filter(x=>x.id!==id);
+    if(state.selClient===id) state.selClient = d.clients[0]?.id || null;
+  }
+  closeDelete(); toast('已刪除：'+label); render();
+}
+
+/* ---------------- 備份下載 ---------------- */
+async function downloadBackup(){
+  let dump;
+  if(live()){
+    try{
+      const res = await fetch(API_BASE+'/api/backup',{headers:authHeaders()});
+      if(res.status===401){ showGate(); return; }
+      dump = await res.json();
+    }catch(e){ return toast('備份失敗：'+e.message); }
+  }else{
+    dump = {exported_at:new Date().toISOString(), mode:'demo', ...state.data};
+  }
+  const blob = new Blob([JSON.stringify(dump,null,2)],{type:'application/json'});
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'daxin-backup-'+new Date().toISOString().slice(0,10)+'.json';
+  a.click(); URL.revokeObjectURL(a.href);
+  toast('備份已下載（含會員與全部營運資料）');
+}
+
+/* ---------------- API 抽象層：Demo / 連線兩用 ---------------- */
+async function apiLoad(){
+  if(!live()) return;
+  try{
+    const h = {headers:authHeaders()};
+    const first = await fetch(API_BASE+'/api/clients', h);
+    if(first.status===401){ showGate(); return; }
+    try{ state.me = await fetch(API_BASE+'/api/auth/me', h).then(r=>r.json()); }catch(e){}
+    const clients = await first.json();
+    const [content, campaigns, crm] = await Promise.all([
+      fetch(API_BASE+'/api/content', h).then(r=>r.json()),
+      fetch(API_BASE+'/api/campaigns', h).then(r=>r.json()),
+      fetch(API_BASE+'/api/crm', h).then(r=>r.json()),
+    ]);
+    const colors = ['#C0392B','#2A9D8F','#E9911C','#3d6b8e','#b0447a'];
+    state.data.clients = clients.map((c,i)=>({...c, tags: typeof c.tags==='string'? JSON.parse(c.tags||'[]'):c.tags, color: colors[i%colors.length]}));
+    state.data.content = content; state.data.campaigns = campaigns; state.data.crm = crm;
+    state.data.profiles = {};
+    for(const c of clients){
+      state.data.profiles[c.id] = await fetch(API_BASE+'/api/profiles/'+c.id, h).then(r=>r.json());
+    }
+    if(!state.data.clients.find(c=>c.id===state.selClient)) state.selClient = state.data.clients[0]?.id || null;
+  }catch(e){ toast('無法連線 Worker API，請檢查 API_BASE 設定'); }
+}
+async function apiPost(path, body){
+  if(live()) return fetch(API_BASE+path,{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify(body)}).then(r=>r.json());
+  return {id:'demo-'+Date.now().toString(36)};
+}
+async function apiPatch(path, body){
+  if(live()) return fetch(API_BASE+path,{method:'PATCH',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify(body)}).then(r=>r.json());
+  return {ok:true};
+}
+async function apiPut(path, body){
+  if(live()) return fetch(API_BASE+path,{method:'PUT',headers:{'Content-Type':'application/json',...authHeaders()},body:JSON.stringify(body)}).then(r=>r.json());
+  return {ok:true};
+}
+
+/* ---------------- 工具 ---------------- */
+const $ = s => document.querySelector(s);
+const fmt = n => 'NT$' + Number(n||0).toLocaleString();
+const esc = s => String(s??'').replace(/[&<>"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const clientOf = id => state.data.clients.find(c=>c.id===id) || {};
+function toast(msg){ const t=$('#toast'); t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'),2600); }
+function chip(st){ return `<span class="chip st-${st}">${st}</span>`; }
+function brandTag(id){ const c=clientOf(id); return `<span style="color:${c.color};font-weight:700">${esc(c.brand_name||c.company_name||'?')}</span>`; }
+
+/* ---------------- 路由定義 ---------------- */
+const ROUTES = [
+ {key:'overview',     num:1, title:'總覽',       sub:'多品牌狀態、今日待處理、KPI 一覽', icon:'◎'},
+ {key:'clients',      num:2, title:'客戶資料庫', sub:'品牌卡片、AI 完整度、標籤與排程', icon:'▣'},
+ {key:'onboarding',   num:3, title:'建立新客戶', sub:'Onboarding 流程：資料上傳 → Campaign → 平台需求', icon:'＋'},
+ {key:'training',     num:4, title:'訓練資料',   sub:'AI 底層資料：TA、競品、法規、社群偏好', icon:'◈'},
+ {key:'generate',     num:5, title:'產出文章',   sub:'選客戶 × 平台 × 目標 → 自動生成文章架構與 Prompt', icon:'✎'},
+ {key:'campaign',     num:6, title:'季度戰役',   sub:'Campaign 規劃、時程與產出內容綁定', icon:'▥'},
+ {key:'schedule',     num:7, title:'內容排程',   sub:'跨品牌排程看板，A 品牌不會發到 B 品牌', icon:'▦'},
+ {key:'revenue',      num:8, title:'收益與交付', sub:'交付流水帳、預算分配、內容 → 營收關聯', icon:'▤'},
+ {key:'crm',          num:9, title:'客戶總管理', sub:'CRM 管線：從名單、提案到續約全追蹤', icon:'◇'},
+ {key:'admin',        num:10,title:'管理員',     sub:'會員管理、密碼重設申請處理', icon:'⚙', adminOnly:true},
+];
+
+function renderNav(){
+  $('#nav').innerHTML = ROUTES.filter(r=>!r.adminOnly || state.me?.is_admin).map(r=>
+    `<a href="#${r.key}" class="${state.route===r.key?'active':''}"><span class="ic">${r.icon}</span><span class="txt">${r.title}</span></a>`).join('');
+  $('#modeTag').innerHTML = live()
+    ? `<b>連線模式</b><br>資料存於 Cloudflare D1`
+    : `<b>Demo 模式</b><br>示範資料，重新整理會還原。部署後於 index.html 填入 API_BASE 即連線。`;
+}
+
+/* =====================================================
+   模組 1：總覽
+===================================================== */
+function pageOverview(){
+  const d = state.data;
+  const nowMonth = new Date().toISOString().slice(0,7);
+  const monthDue = d.content.filter(c=>c.scheduled_date && c.scheduled_date.startsWith(nowMonth)).length;
+  const avgComplete = Math.round(d.clients.reduce((s,c)=>s+(c.data_completeness||0),0)/(d.clients.length||1));
+  const pending = d.content.filter(c=>['待客戶審核','待補資料','緊急處理'].includes(c.status)).length;
+  const receivable = d.content.filter(c=>c.status==='已發布').reduce((s,c)=>s+(c.value_ntd||0),0);
+  const review = d.content.filter(c=>c.status==='待客戶審核');
+  const urgent = d.content.filter(c=>c.status==='緊急處理');
+  const published = d.content.filter(c=>c.status==='已發布');
+
+  return `
+  <h1 class="page-title">總覽</h1>
+  <p class="page-desc">管理多個品牌、季度活動、平台文案與交付狀態，讓老闆和員工知道下一篇內容該為誰、為什麼、在哪個平台發。</p>
+  <div class="stats">
+    <div class="stat"><div class="label">本月應交付內容</div><div class="val">${monthDue}</div><div class="note n-green">含 FB / IG / SEO / Reels</div><div class="bubble b-green"></div></div>
+    <div class="stat"><div class="label">AI 資料庫完整度</div><div class="val">${avgComplete}%</div><div class="note n-gold">品牌、產品、競品、歷史內容</div><div class="bubble b-cream"></div></div>
+    <div class="stat"><div class="label">待審核或逾期</div><div class="val">${pending}</div><div class="note n-red">需要主管介入</div><div class="bubble b-red"></div></div>
+    <div class="stat"><div class="label">預估可認列收入</div><div class="val">${fmt(receivable)}</div><div class="note n-blue">以交付完成計算</div><div class="bubble b-blue"></div></div>
+  </div>
+  <div style="display:grid;grid-template-columns:320px 1fr;gap:16px">
+    <div class="panel"><div class="panel-head"><h3>客戶狀態</h3><span class="hint">多品牌管理</span></div>
+      ${d.clients.map(c=>`
+      <div class="brand-card ${state.selClient===c.id?'sel':''}" onclick="state.selClient='${c.id}';render()">
+        <div class="row"><div class="avatar" style="background:${c.color}">${esc((c.brand_name||'?')[0])}</div>
+        <div><b style="font-size:14px">${esc(c.company_name)}</b><div style="font-size:11.5px;color:var(--muted)">${esc(c.industry)}</div></div>
+        <div class="pct">${c.data_completeness}%</div></div>
+        <div class="bar"><i style="width:${c.data_completeness}%;background:${c.color}"></i></div>
+        <div class="tagline">${(c.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+      </div>`).join('')}
+    </div>
+    <div class="panel"><div class="panel-head"><h3>今日優先處理</h3><span class="hint">依日期與風險排序</span></div>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:12px">
+        <div><h4 style="font-size:13px;margin-bottom:8px">待客戶審核 <span class="chip st-待客戶審核">${review.length}</span></h4>
+          ${review.map(c=>kcard(c)).join('')||'<div class="kempty">沒有項目</div>'}</div>
+        <div><h4 style="font-size:13px;margin-bottom:8px">緊急處理 <span class="chip st-緊急處理">${urgent.length}</span></h4>
+          ${urgent.map(c=>kcard(c)).join('')||'<div class="kempty">沒有項目</div>'}</div>
+        <div><h4 style="font-size:13px;margin-bottom:8px">已發布 <span class="chip st-已發布">${published.length}</span></h4>
+          ${published.slice(0,3).map(c=>kcard(c)).join('')}</div>
+      </div>
+    </div>
+  </div>`;
+}
+function kcard(c){
+  return `<div class="kcard"><b>${esc(c.title)}</b>
+  <div class="meta">${brandTag(c.client_id)} · ${esc(c.platform)}<br>${c.scheduled_date||''}</div>
+  <div style="margin-top:6px">${chip(c.status)} ${c.business_goal?`<span class="chip" style="background:var(--cream-2);color:var(--text)">${esc(c.business_goal)}</span>`:''}</div></div>`;
+}
+
+/* =====================================================
+   模組 2：客戶資料庫
+===================================================== */
+function pageClients(){
+  const d = state.data; const sel = clientOf(state.selClient); const p = d.profiles[state.selClient]||{};
+  const cards = [
+    ['品牌定位', p.positioning],['目標客群', p.target_audience],
+    ['內容支柱', p.content_pillars],['產品與檔期', (sel.tags||[]).join('、')],
+    ['競品環境', p.competitors],['寫作限制', p.writing_restrictions],
+    ['法規護欄', p.regulation_notes],['社群平台偏好', p.platform_preferences],
+  ];
+  return `
+  <h1 class="page-title">客戶資料庫</h1>
+  <p class="page-desc">先建立品牌、產品、競品、受眾、歷史內容與限制條件，之後每篇文案才不會憑空亂寫。</p>
+  <div style="display:grid;grid-template-columns:300px 1fr;gap:16px">
+    <div class="panel"><div class="panel-head"><h3>品牌列表</h3><span class="hint">點選切換</span></div>
+      ${d.clients.map(c=>`
+      <div class="brand-card ${state.selClient===c.id?'sel':''}" onclick="state.selClient='${c.id}';render()">
+        <div class="row"><div class="avatar" style="background:${c.color}">${esc((c.brand_name||'?')[0])}</div>
+        <div><b style="font-size:14px">${esc(c.company_name)}</b></div><div class="pct">${c.data_completeness}%</div></div>
+        <div class="bar"><i style="width:${c.data_completeness}%;background:${c.color}"></i></div>
+        <div class="tagline">${(c.tags||[]).map(t=>`<span class="tag">${esc(t)}</span>`).join('')}</div>
+      </div>`).join('')}
+    </div>
+    <div class="panel"><div class="panel-head"><h3>${esc(sel.company_name)}｜AI 資料庫</h3><span class="hint">產出文章前的底層資料</span></div>
+      <div class="grid2">${cards.map(([t,v])=>`<div class="info-card"><h4>${t}</h4><p>${esc(v)||'<i style="color:var(--muted)">待補充</i>'}</p></div>`).join('')}</div>
+      <div style="margin-top:16px;border-top:1px solid var(--line);padding-top:14px">
+        <h4 style="font-size:13.5px;margin-bottom:10px">品牌基本資料編輯</h4>
+        <div class="grid4">
+          <div class="field"><label>品牌名稱</label><input id="cl_brand" value="${esc(sel.brand_name||'')}"></div>
+          <div class="field"><label>月費 NT$</label><input id="cl_fee" type="number" value="${sel.monthly_fee||0}"></div>
+          <div class="field"><label>資料完整度 %</label><input id="cl_complete" type="number" min="0" max="100" value="${sel.data_completeness||0}"></div>
+          <div class="field"><label>標籤（逗號分隔）</label><input id="cl_tags" value="${esc((sel.tags||[]).join('、'))}"></div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px"><button class="btn small" onclick="saveClientInfo()">儲存基本資料</button>
+        <button class="btn small danger" onclick="askDelete('client','${sel.id}','${esc(sel.brand_name||sel.company_name)}（整個品牌）')">刪除此品牌</button></div>
+      </div>
+    </div>
+  </div>`;
+}
+
+/* =====================================================
+   模組 3：建立新客戶 Onboarding
+===================================================== */
+function pageOnboarding(){
+  return `
+  <h1 class="page-title">建立新客戶</h1>
+  <p class="page-desc">連續新增不同客戶，匯入公司、品牌、產品、歷史內容與訪談資料，再設定行銷目標、季度 Campaign 和平台需求。</p>
+  <div class="step-flow">
+    ${[['上傳資料','公司、品牌、產品與歷史內容先進庫。'],['判斷目標','行銷目標、案件規模與季度重點。'],['設定 Campaign','把三個月主題、產品與預算排到排程。'],['平台需求','指定 FB、IG、SEO 等內容格式與頻率。'],['內容訓練','資料完成後，系統開始整理可用訓練資料。']]
+      .map((s,i)=>`<div class="step"><div class="no">${i+1}</div><b>${s[0]}</b><p>${s[1]}</p></div>`).join('')}
+  </div>
+  <div class="panel"><div class="panel-head"><h3>基本資料</h3><span class="hint">新客戶資料庫主檔</span></div>
+    <div class="grid4">
+      <div class="field"><label>客戶 / 公司名稱</label><input id="ob_company" placeholder="例如：山嵐茶業有限公司"></div>
+      <div class="field"><label>品牌名稱</label><input id="ob_brand" placeholder="例如：山嵐茶坊、毛孩日常"></div>
+      <div class="field"><label>產業 / 商品類別</label><input id="ob_industry" placeholder="例如：食品、旅宿、課程"></div>
+      <div class="field"><label>月費 / 專案金額</label><input id="ob_fee" type="number" value="45000"></div>
+    </div>
+    <div class="grid3" style="margin-top:14px">
+      <div class="field"><label>案件規模</label><select id="ob_scale"><option>小案</option><option selected>中案</option><option>大案</option></select></div>
+      <div class="field"><label>資料完整度</label><select id="ob_complete"><option value="30">初步資料，需訪談補齊</option><option value="60" selected>已有基礎資料，可先建庫</option><option value="90">資料齊全，可直接產出</option></select></div>
+      <div class="field"><label>時程狀態</label><select id="ob_timeline"><option selected>一般排程</option><option>緊急排程</option></select></div>
+    </div>
+  </div>
+  <div class="panel"><div class="panel-head"><h3>資料上傳區</h3><span class="hint">原型會記錄檔名，未來接後端後可直接入庫</span></div>
+    <div class="grid3">
+      <div class="field"><label>上傳公司資料</label><input type="file" multiple><p style="font-size:11.5px;color:var(--muted);margin-top:5px">公司簡介、合約、報價、窗口資料。</p></div>
+      <div class="field"><label>上傳品牌資料</label><input type="file" multiple><p style="font-size:11.5px;color:var(--muted);margin-top:5px">品牌書、視覺規範、語氣、Logo、官網文案。</p></div>
+      <div class="field"><label>上傳產品資料</label><input type="file" multiple><p style="font-size:11.5px;color:var(--muted);margin-top:5px">產品型錄、SKU、賣點、價格、通路。</p></div>
+    </div>
+  </div>
+  <button class="btn" onclick="createClient()">建立客戶並開始訓練資料</button>`;
+}
+async function createClient(){
+  const company = $('#ob_company').value.trim();
+  if(!company) return toast('請先填寫客戶 / 公司名稱');
+  const body = { company_name:company, brand_name:$('#ob_brand').value.trim(), industry:$('#ob_industry').value.trim(),
+    monthly_fee:+$('#ob_fee').value||0, case_scale:$('#ob_scale').value, data_completeness:+$('#ob_complete').value,
+    timeline_status:$('#ob_timeline').value, tags:[] };
+  const res = await apiPost('/api/clients', body);
+  const colors=['#3e7d5a','#b04a3a','#3d6b8e','#a07816','#b0447a'];
+  state.data.clients.push({...body, id:res.id, color:colors[state.data.clients.length%colors.length]});
+  state.data.profiles[res.id] = {positioning:'',target_audience:'',content_pillars:'',competitors:'',writing_restrictions:'',regulation_notes:'',platform_preferences:''};
+  state.selClient = res.id;
+  toast('已建立客戶：'+company+'，接著到「訓練資料」補齊品牌 DNA');
+  location.hash = '#training';
+}
+
+/* =====================================================
+   模組 4：訓練資料
+===================================================== */
+function pageTraining(){
+  const sel = clientOf(state.selClient); const p = state.data.profiles[state.selClient]||{};
+  const fields = [
+    ['positioning','品牌定位','古法釀造、職人精神、安心食安…'],
+    ['target_audience','TA 目標對象設定','Persona、痛點、搜尋意圖、決策歷程…'],
+    ['content_pillars','內容支柱','百年工藝、天然安心、料理提案…'],
+    ['competitors','競品對手資訊','代表品項、價格帶、差異化、可攻佔內容角度…'],
+    ['writing_restrictions','寫作限制','避免療效宣稱、強調情境與 CTA…'],
+    ['regulation_notes','行銷法規護欄','可用詞、警戒詞、禁用詞、替代寫法…'],
+    ['platform_preferences','社群平台受眾偏好','FB/IG/Threads/TikTok 語氣、互動鉤子、素材方向、CTA…'],
+  ];
+  const filled = fields.filter(f=>(p[f[0]]||'').trim()).length;
+  return `
+  <h1 class="page-title">訓練資料</h1>
+  <p class="page-desc">查看目前已整理與訓練完成的 TA、競品、行銷法規、社群平台偏好與文章架構。這些是「產出文章」時餵給 AI 的底層資料。</p>
+  <div class="stats">
+    <div class="stat"><div class="label">底層資料來源</div><div class="val">${filled}</div><div class="note n-green">TA / 競品 / 法規 / 社群</div><div class="bubble b-green"></div></div>
+    <div class="stat"><div class="label">目前品牌</div><div class="val" style="font-size:20px">${esc(sel.brand_name||sel.company_name)}</div><div class="note n-gold">可於客戶資料庫切換</div><div class="bubble b-cream"></div></div>
+    <div class="stat"><div class="label">資料完整度</div><div class="val">${Math.round(filled/fields.length*100)}%</div><div class="note n-blue">依欄位填寫計算</div><div class="bubble b-blue"></div></div>
+    <div class="stat"><div class="label">法規檢查</div><div class="val">${(p.regulation_notes||'').trim()?'已設定':'未設定'}</div><div class="note n-red">輸出前自動提醒</div><div class="bubble b-red"></div></div>
+  </div>
+  <div class="panel"><div class="panel-head"><h3>${esc(sel.company_name)} — 品牌 DNA 編輯</h3><span class="hint">儲存後供 AI 生成永久沿用</span></div>
+    <div class="grid2">
+      ${fields.map(f=>`<div class="field"><label>${f[1]}</label><textarea id="tr_${f[0]}" placeholder="${f[2]}">${esc(p[f[0]]||'')}</textarea></div>`).join('')}
+    </div>
+    <div style="margin-top:14px"><button class="btn" onclick="saveProfile()">儲存訓練資料</button></div>
+  </div>`;
+}
+async function saveClientInfo(){
+  const c = clientOf(state.selClient);
+  c.brand_name = $('#cl_brand').value.trim();
+  c.monthly_fee = +$('#cl_fee').value||0;
+  c.data_completeness = Math.min(100, Math.max(0, +$('#cl_complete').value||0));
+  c.tags = $('#cl_tags').value.split(/[、,，]/).map(s=>s.trim()).filter(Boolean);
+  await apiPatch('/api/clients/'+c.id, {brand_name:c.brand_name, monthly_fee:c.monthly_fee, data_completeness:c.data_completeness, tags:c.tags});
+  toast('已更新品牌基本資料');
+  render();
+}
+async function saveProfile(){
+  const p = state.data.profiles[state.selClient] || (state.data.profiles[state.selClient]={});
+  for(const k of ['positioning','target_audience','content_pillars','competitors','writing_restrictions','regulation_notes','platform_preferences'])
+    p[k] = $('#tr_'+k).value;
+  await apiPut('/api/profiles/'+state.selClient, p);
+  toast('訓練資料已儲存，「產出文章」將自動套用');
+  render();
+}
+
+/* =====================================================
+   模組 5：產出文章
+===================================================== */
+function pageGenerate(){
+  const d = state.data;
+  return `
+  <h1 class="page-title">產出文章</h1>
+  <p class="page-desc">選客戶、TA、平台、資料來源與文章架構，系統套用品牌資料庫產出可執行的 prompt 與初稿骨架。</p>
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start">
+    <div class="panel"><div class="panel-head"><h3>產出文章</h3><span class="hint">平台化 prompt 設計</span></div>
+      <div class="grid2">
+        <div class="field"><label>客戶（品牌）</label><select id="g_client" onchange="refreshTA()">${d.clients.map(c=>`<option value="${c.id}" ${c.id===state.selClient?'selected':''}>${esc(c.brand_name||c.company_name)}</option>`).join('')}</select></div>
+        <div class="field"><label>平台</label><select id="g_platform"><option>Instagram</option><option>Facebook</option><option>FB+IG</option><option>SEO 文章</option><option>Reels 腳本</option><option>蝦皮商品文</option><option>KOL brief</option></select></div>
+        <div class="field"><label>季度活動</label><select id="g_campaign"><option>品牌聲量期</option><option>轉換衝刺期</option><option>節慶檔期</option></select></div>
+        <div class="field"><label>商業目的</label><select id="g_goal"><option>建立信任</option><option>轉換營收</option><option>互動增長</option><option>導流名單</option></select></div>
+        <div class="field"><label>目標對象（讀取該品牌 TA 分線）</label><select id="g_ta">${taOptions(state.selClient)}</select></div>
+        <div class="field"><label>文章架構</label><select id="g_structure"><option>SEO 五段式</option><option>Hook → Problem → Agitate → Solution → CTA</option><option>故事型（品牌敘事）</option><option>清單型（教學收藏）</option></select></div>
+        <div class="field"><label>深度資料</label><select id="g_data"><option value="all">全部啟用：TA + 競品 + 法規 + 社群</option><option value="ta">只用 TA</option><option value="min">最小：定位 + 限制</option></select></div>
+        <div class="field"><label>內容格式</label><select id="g_format"><option value="outline">文章骨架 + AI Prompt</option><option value="full">完整貼文文案</option></select></div>
+      </div>
+      <div class="field" style="margin-top:12px"><label>主題 / 產品</label><input id="g_topic" placeholder="例如：年節茶禮盒最後倒數"></div>
+      <div class="field" style="margin-top:12px"><label>補充限制</label><textarea id="g_extra" placeholder="例如：口吻溫暖但要有轉換 CTA；避免過度醫療宣稱；需要 3 個 hashtag。"></textarea></div>
+      <div style="margin-top:14px"><button class="btn" id="g_btn" onclick="generateArticle()">產出文章</button></div>
+    </div>
+    <div class="panel"><div class="panel-head"><h3>生成結果</h3><span class="hint">產出後自動存入內容排程（草稿中）</span></div>
+      <div class="gen-out empty" id="g_out">選擇客戶、平台與商業目的後，按下生成。${live()?'將呼叫 Worker 上的 Claude API 產出初稿。':'Demo 模式會模擬未來 AI 根據品牌資料庫、季度活動與平台 prompt 產出的初稿。'}</div>
+    </div>
+  </div>`;
+}
+function taOptions(cid){
+  const ta = (state.data.profiles[cid]?.target_audience||'').trim();
+  const lines = ta.split('\n').map(s=>s.trim()).filter(s=>s.includes('｜'));
+  if(lines.length) return lines.map(l=>`<option>${esc(l)}</option>`).join('');
+  return `<option>${esc(ta||'主要 TA（請先到「訓練資料」設定目標客群）')}</option>`;
+}
+function refreshTA(){
+  state.selClient = $('#g_client').value;
+  $('#g_ta').innerHTML = taOptions(state.selClient);
+}
+async function generateArticle(){
+  const cid = $('#g_client').value; const c = clientOf(cid); const p = state.data.profiles[cid]||{};
+  const topic = $('#g_topic').value.trim() || '（依季度活動主軸發想）';
+  const platform = $('#g_platform').value, goal = $('#g_goal').value;
+  const out = $('#g_out'); const btn = $('#g_btn');
+  out.classList.remove('empty'); out.textContent = 'AI 生成中，請稍候…'; btn.disabled = true;
+
+  let text;
+  if(live()){
+    try{
+      const res = await fetch(API_BASE+'/api/generate',{method:'POST',headers:{'Content-Type':'application/json',...authHeaders()},
+        body:JSON.stringify({client_id:cid, platform, business_goal:goal,
+          target_audience_line:$('#g_ta').value, structure:$('#g_structure').value,
+          campaign_theme:$('#g_campaign').value, topic, extra_constraints:$('#g_extra').value,
+          output_format:$('#g_format').value,
+          use_data: $('#g_data').value==='all'?{ta:1,competitors:1,regulation:1,social:1}:$('#g_data').value==='ta'?{ta:1}:{} })});
+      const data = await res.json();
+      if(data.error){ out.textContent = '生成失敗：'+(data.detail?.error?.message||data.error); btn.disabled=false; return; }
+      text = data.content;
+      state.data.content.push({id:data.id,client_id:cid,title:topic,platform,status:'草稿中',content_body:text,business_goal:goal,scheduled_date:null,value_ntd:0,next_step:'完成初稿後送審'});
+    }catch(e){ out.textContent='連線失敗：'+e.message; btn.disabled=false; return; }
+  }else{
+    await new Promise(r=>setTimeout(r,900));
+    text = `【${c.brand_name||c.company_name}｜${platform}｜${goal}】\n主題：${topic}\n\n— 文章骨架（Demo 模擬）—\n1. Hook：痛點問句開場（依 TA「${$('#g_ta').value.split('｜')[1]||''}」設計）\n2. Problem：點出情境困擾\n3. Solution：以「${(p.content_pillars||'品牌內容支柱').split('、')[0]}」帶出產品差異\n4. 實用內容：食譜 / 用法 / 收藏點\n5. CTA：${goal==='轉換營收'?'限時導購連結':'留言互動鉤子'} + 3 hashtag\n\n— 法規檢核 —\n${p.regulation_notes?'已套用品牌法規護欄，禁用詞將自動迴避。':'⚠ 此品牌尚未設定法規護欄，請先到「訓練資料」補齊。'}\n\n※ 連上 Worker API 後，此處會由 Claude 依完整品牌 DNA 產出真實初稿。`;
+    state.data.content.push({id:'ct-demo-'+Date.now().toString(36),client_id:cid,title:topic,platform,status:'草稿中',content_body:text,business_goal:goal,scheduled_date:null,value_ntd:0,next_step:'完成初稿後送審'});
+  }
+  out.textContent = text; btn.disabled = false;
+  toast('初稿已產出並存入「內容排程」（狀態：草稿中）');
+}
+
+/* =====================================================
+   模組 6：季度戰役（Kanban）
+===================================================== */
+function pageCampaign(){
+  const d = state.data; const sel = state.selClient;
+  const items = d.content.filter(c=>c.client_id===sel);
+  const camp = d.campaigns.find(cp=>cp.client_id===sel);
+  return `
+  <h1 class="page-title">季度戰役</h1>
+  <p class="page-desc">用三個月視角規劃預算、主題、活動節點與內容任務，支援小案、中案、大案。</p>
+  <div class="panel"><div class="panel-head"><h3>季度戰役看板</h3>
+    <span>${d.clients.map(c=>`<button class="btn small ${c.id===sel?'':'ghost'}" onclick="state.selClient='${c.id}';render()">${esc(c.brand_name||c.company_name)}</button>`).join(' ')}</span></div>
+    ${camp?`<p style="font-size:13px;color:var(--muted);margin-bottom:14px">${esc(camp.quarter)}｜${esc(camp.theme)}${camp.budget?`｜預算 ${fmt(camp.budget)}`:''} <button class="del-x" onclick="askDelete('campaign','${camp.id}','${esc(camp.quarter)}戰役')">✕ 刪除戰役</button></p>`:`
+    <div class="grid4" style="margin-bottom:14px;align-items:end">
+      <div class="field"><label>季度</label><input id="cp_quarter" placeholder="例如：2026-Q3"></div>
+      <div class="field"><label>戰役主題</label><input id="cp_theme" placeholder="例如：夏日檔期 → 中秋禮盒預熱"></div>
+      <div class="field"><label>預算（可略）</label><input id="cp_budget" type="number" value="0"></div>
+      <div><button class="btn" onclick="createCampaign()">建立本季戰役</button></div>
+    </div>`}
+    <div class="kanban">
+      ${STATUSES.map(st=>{
+        const list = items.filter(c=>c.status===st);
+        return `<div class="kcol"><h4>${st}<span>${list.length}</span></h4>
+          ${list.map(c=>`<div class="kcard"><b>${esc(c.title)} <button class="del-x" onclick="askDelete('content','${c.id}','${esc(c.title)}')" title="刪除">✕</button></b>
+            <div class="meta">${esc(c.platform)} · ${c.scheduled_date||'未排程'}</div>
+            <div style="margin-top:6px">${chip(c.status)}${c.business_goal?` <span class="chip" style="background:var(--cream-2)">${esc(c.business_goal)}</span>`:''}</div>
+            <div style="margin-top:7px"><select onchange="moveStatus('${c.id}',this.value)" style="padding:4px 6px;font-size:11.5px">
+              <option value="">狀態流轉…</option>${STATUSES.filter(s=>s!==st).map(s=>`<option>${s}</option>`).join('')}</select></div>
+          </div>`).join('') || '<div class="kempty">空</div>'}
+        </div>`;
+      }).join('')}
+    </div>
+  </div>
+  <div class="panel"><div class="panel-head"><h3>戰役內容庫</h3><span class="hint">從策略到平台文案</span></div>
+    <table><thead><tr><th>週次</th><th>平台</th><th>主題</th><th>商業目的</th><th>狀態</th></tr></thead><tbody>
+      ${items.map((c,i)=>`<tr><td>W${i+1}<div class="sub">${c.scheduled_date||''}</div></td><td><span class="chip" style="background:var(--blue-bg);color:var(--blue)">${esc(c.platform)}</span></td><td><b>${esc(c.title)}</b></td><td>${esc(c.business_goal)}</td><td>${chip(c.status)}</td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+async function createCampaign(){
+  const quarter = $('#cp_quarter').value.trim(), theme = $('#cp_theme').value.trim();
+  if(!quarter || !theme) return toast('請填寫季度與戰役主題');
+  const body = {client_id: state.selClient, quarter, theme, budget: +$('#cp_budget').value||0};
+  const res = await apiPost('/api/campaigns', body);
+  state.data.campaigns.push({...body, id: res.id});
+  toast('已建立戰役：'+quarter+'｜'+theme);
+  render();
+}
+async function moveStatus(id, st){
+  if(!st) return;
+  const item = state.data.content.find(c=>c.id===id);
+  item.status = st;
+  if(st==='已發布' && !item.published_date) item.published_date = new Date().toISOString().slice(0,10);
+  await apiPatch('/api/content/'+id, {status:st, published_date:item.published_date||null});
+  toast(`「${item.title}」→ ${st}`);
+  render();
+}
+
+/* =====================================================
+   模組 7：內容排程（月曆）
+===================================================== */
+function deletePicked(){
+  const id = $('#ci_pick').value;
+  const c = state.data.content.find(x=>x.id===id);
+  if(c) askDelete('content', c.id, c.title);
+}
+function pickContent(){
+  const id = $('#ci_pick').value;
+  const c = state.data.content.find(x=>x.id===id);
+  $('#ci_del').style.display = c ? 'inline-block' : 'none';
+  if(!c){ $('#ci_title').value=''; $('#ci_date').value=''; $('#ci_next').value=''; return; }
+  $('#ci_client').value = c.client_id; $('#ci_title').value = c.title;
+  $('#ci_platform').value = c.platform; $('#ci_status').value = c.status;
+  $('#ci_date').value = c.scheduled_date||''; $('#ci_value').value = c.value_ntd||0;
+  $('#ci_next').value = c.next_step||'';
+}
+async function saveContent(){
+  const id = $('#ci_pick').value;
+  const title = $('#ci_title').value.trim();
+  if(!title) return toast('請填寫標題');
+  const body = {client_id:$('#ci_client').value, title, platform:$('#ci_platform').value,
+    status:$('#ci_status').value, scheduled_date:$('#ci_date').value||null,
+    value_ntd:+$('#ci_value').value||0, next_step:$('#ci_next').value};
+  if(body.status==='已發布') body.published_date = body.scheduled_date || new Date().toISOString().slice(0,10);
+  if(id){
+    const item = state.data.content.find(x=>x.id===id);
+    Object.assign(item, body);
+    await apiPatch('/api/content/'+id, body);
+    toast('已更新：'+title);
+  }else{
+    const res = await apiPost('/api/content', body);
+    state.data.content.push({...body, id:res.id, content_body:'', business_goal:'', campaign_id:null});
+    toast('已新增內容：'+title);
+  }
+  render();
+}
+function shiftMonth(delta){
+  const [y,m] = state.calMonth.split('-').map(Number);
+  const dt = new Date(y, m-1+delta, 1);
+  state.calMonth = dt.getFullYear() + '-' + String(dt.getMonth()+1).padStart(2,'0');
+  render();
+}
+function pageSchedule(){
+  const d = state.data;
+  const [y,m] = state.calMonth.split('-').map(Number);
+  const first = new Date(y, m-1, 1); const days = new Date(y, m, 0).getDate();
+  const startDow = first.getDay();
+  const filterSt = state.schedSt||'', filterCl = state.schedCl||'';
+  let cells = '';
+  for(let i=0;i<startDow;i++) cells += `<div class="cal-cell"></div>`;
+  for(let day=1;day<=days;day++){
+    const ds = `${state.calMonth}-${String(day).padStart(2,'0')}`;
+    const evs = d.content.filter(c=>c.scheduled_date===ds && (!filterSt||c.status===filterSt) && (!filterCl||c.client_id===filterCl));
+    cells += `<div class="cal-cell"><div class="d">${day}</div>
+      ${evs.map(c=>`<div class="cal-ev ev-${c.status}"><b>${esc(clientOf(c.client_id).brand_name||'')}</b><br>${esc(c.platform)} · ${esc(c.title)}<br><span style="opacity:.75">${c.status}</span></div>`).join('')}
+    </div>`;
+  }
+  return `
+  <h1 class="page-title">內容排程</h1>
+  <p class="page-desc">把活動、平台和員工交付節奏排進日曆，快速找到草稿中、待補資料、待客戶審核、緊急處理和已發布內容。</p>
+  <div class="panel"><div class="panel-head"><h3>新增／編輯內容</h3><span class="hint">手動匯入內容，或幫 AI 草稿補上日期與價值</span></div>
+    <div class="grid4">
+      <div class="field"><label>選擇項目</label><select id="ci_pick" onchange="pickContent()">
+        <option value="">＋ 新增一筆內容</option>
+        ${d.content.map(c=>`<option value="${c.id}">${esc(clientOf(c.client_id).brand_name||'')}｜${esc(c.title)}</option>`).join('')}</select></div>
+      <div class="field"><label>品牌</label><select id="ci_client">${d.clients.map(c=>`<option value="${c.id}">${esc(c.brand_name||c.company_name)}</option>`).join('')}</select></div>
+      <div class="field"><label>標題</label><input id="ci_title" placeholder="例如：年節禮盒搶先看"></div>
+      <div class="field"><label>平台</label><select id="ci_platform"><option>FB+IG</option><option>Facebook</option><option>Instagram</option><option>SEO</option><option>Reels</option><option>蝦皮</option><option>KOL</option></select></div>
+    </div>
+    <div class="grid4" style="margin-top:12px">
+      <div class="field"><label>狀態</label><select id="ci_status">${STATUSES.map(s=>`<option>${s}</option>`).join('')}</select></div>
+      <div class="field"><label>預計發布日</label><input id="ci_date" type="date"></div>
+      <div class="field"><label>每篇價值 NT$</label><input id="ci_value" type="number" value="1500"></div>
+      <div class="field"><label>下一步備註</label><input id="ci_next" placeholder="例如：等客戶補圖"></div>
+    </div>
+    <div style="margin-top:14px;display:flex;gap:8px"><button class="btn" onclick="saveContent()">儲存內容</button>
+    <button class="btn danger" onclick="deletePicked()" id="ci_del" style="display:none">刪除此內容</button></div>
+  </div>
+  <div class="panel">
+    <div class="cal-head">
+      <div class="field" style="width:180px"><label>狀態篩選</label><select onchange="state.schedSt=this.value;render()">
+        <option value="">全部狀態</option>${STATUSES.map(s=>`<option ${filterSt===s?'selected':''}>${s}</option>`).join('')}</select></div>
+      <div class="field" style="width:200px"><label>客戶篩選</label><select onchange="state.schedCl=this.value;render()">
+        <option value="">全部客戶</option>${d.clients.map(c=>`<option value="${c.id}" ${filterCl===c.id?'selected':''}>${esc(c.company_name)}</option>`).join('')}</select></div>
+      <div style="margin-left:auto;display:flex;gap:6px;align-items:flex-end">
+        <button class="mbtn" onclick="shiftMonth(-1)">◀ 上月</button>
+        <button class="mbtn on">${y} 年 ${m} 月</button>
+        <button class="mbtn" onclick="shiftMonth(1)">下月 ▶</button>
+      </div>
+    </div>
+    <div class="legend">${STATUSES.map(s=>chip(s)).join(' ')}</div>
+    <div class="calendar">
+      ${['日','一','二','三','四','五','六'].map(w=>`<div class="cal-cell" style="min-height:auto;background:var(--cream-2);font-weight:700;text-align:center">${w}</div>`).join('')}
+      ${cells}
+    </div>
+  </div>`;
+}
+
+/* =====================================================
+   模組 8：收益與交付
+===================================================== */
+function pageRevenue(){
+  const d = state.data;
+  const done = d.content.filter(c=>c.status==='已發布');
+  const stuck = d.content.filter(c=>['待補資料','待客戶審核','草稿中','緊急處理'].includes(c.status));
+  const contract = d.clients.reduce((s,c)=>s+(c.monthly_fee||0)*3,0);
+  const avg = done.length? Math.round(done.reduce((s,c)=>s+(c.value_ntd||0),0)/done.length):0;
+  return `
+  <h1 class="page-title">收益與交付</h1>
+  <p class="page-desc">把每一篇內容連到交付價值、狀態與下一步，讓老闆看得懂產能和收入。</p>
+  <div class="stats">
+    <div class="stat"><div class="label">完成交付</div><div class="val">${done.length}</div><div class="note n-green">已發布</div><div class="bubble b-green"></div></div>
+    <div class="stat"><div class="label">本季合約值</div><div class="val">${fmt(contract)}</div><div class="note n-gold">依客戶月費估算</div><div class="bubble b-cream"></div></div>
+    <div class="stat"><div class="label">每篇平均價值</div><div class="val">${fmt(avg)}</div><div class="note n-gold">用於內部產能管理</div><div class="bubble b-cream"></div></div>
+    <div class="stat"><div class="label">卡關交付</div><div class="val">${stuck.length}</div><div class="note n-red">需補圖或審稿</div><div class="bubble b-red"></div></div>
+  </div>
+  <div class="panel"><div class="panel-head"><h3>交付流水帳</h3><span class="hint">老闆看收益，員工看下一步</span></div>
+    <table><thead><tr><th>客戶</th><th>內容</th><th>平台</th><th>狀態</th><th>價值</th><th>下一步</th></tr></thead><tbody>
+      ${d.content.map(c=>`<tr>
+        <td>${brandTag(c.client_id)}</td>
+        <td><b>${esc(c.title)}</b><div class="sub">${esc((c.content_body||'').slice(0,32))}</div></td>
+        <td>${esc(c.platform)}</td><td>${chip(c.status)}</td><td>${fmt(c.value_ntd)}</td>
+        <td style="font-size:12.5px">${esc(c.next_step)}</td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+
+/* =====================================================
+   模組 9：客戶總管理 CRM
+===================================================== */
+function pageCRM(){
+  const d = state.data;
+  const active = d.crm.filter(r=>!['已成交','流失'].includes(r.stage));
+  const pipeline = d.crm.reduce((s,r)=>s+(r.deal_value||0),0);
+  const monthTodo = d.crm.filter(r=>r.next_contact_date && r.next_contact_date.startsWith(new Date().toISOString().slice(0,7))).length;
+  return `
+  <h1 class="page-title">客戶總管理</h1>
+  <p class="page-desc">管理客戶聯絡人、商機階段、跟進狀態、下次聯繫與任務紀錄，讓內容交付接上客戶關係。</p>
+  <div class="stats">
+    <div class="stat"><div class="label">管理客戶數</div><div class="val">${d.crm.length}</div><div class="note n-green">含潛在與既有客戶</div><div class="bubble b-green"></div></div>
+    <div class="stat"><div class="label">跟進中商機</div><div class="val">${active.length}</div><div class="note n-blue">需求確認到提案</div><div class="bubble b-blue"></div></div>
+    <div class="stat"><div class="label">本月待辦</div><div class="val">${monthTodo}</div><div class="note n-gold">會議、催審、回報</div><div class="bubble b-cream"></div></div>
+    <div class="stat"><div class="label">預估管線價值</div><div class="val">${fmt(pipeline)}</div><div class="note n-green">依商機金額估算</div><div class="bubble b-green"></div></div>
+  </div>
+  <div class="panel"><div class="panel-head"><h3>客戶總管理欄位</h3><span class="hint">建立客戶關係、需求、負責人與下次動作</span></div>
+    <div class="grid4">
+      <div class="field"><label>公司 / 客戶名稱</label><input id="cr_company" placeholder="例如：新客戶品牌有限公司"></div>
+      <div class="field"><label>聯絡人</label><input id="cr_contact" placeholder="例如：王小姐"></div>
+      <div class="field"><label>職稱</label><input id="cr_title" placeholder="例如：行銷經理、品牌窗口"></div>
+      <div class="field"><label>聯絡方式</label><input id="cr_method" placeholder="例如：LINE / Email / Phone"></div>
+    </div>
+    <div class="grid4" style="margin-top:12px">
+      <div class="field"><label>客戶階段</label><select id="cr_stage"><option>新名單</option><option>提案中</option><option>合約洽談</option><option>已成交</option><option>續約追蹤</option></select></div>
+      <div class="field"><label>跟進狀態</label><select id="cr_follow"><option>待首次聯繫</option><option>已聯繫待回覆</option><option>會議排程中</option><option>提案準備中</option></select></div>
+      <div class="field"><label>下次聯繫日期</label><input id="cr_date" type="date"></div>
+      <div class="field"><label>商機金額</label><input id="cr_value" type="number" value="60000"></div>
+    </div>
+    <div class="grid3" style="margin-top:12px">
+      <div class="field"><label>行銷需求</label><select id="cr_need"><option>SEO 文章</option><option>FB/IG 經營</option><option>廣告投放</option><option>整合行銷</option></select></div>
+      <div class="field"><label>負責人</label><input id="cr_owner" placeholder="例如：業務 A / PM B"></div>
+      <div class="field"><label>優先級</label><select id="cr_priority"><option>一般</option><option>高</option><option>低</option></select></div>
+    </div>
+    <div class="field" style="margin-top:12px"><label>需求與溝通紀錄</label><textarea id="cr_notes" placeholder="記錄客戶需求、預算限制、提案方向、會議重點與下一步。"></textarea></div>
+    <div style="margin-top:14px"><button class="btn" onclick="createCRM()">新增客戶管理紀錄</button></div>
+  </div>
+  <div class="panel"><div class="panel-head"><h3>CRM 管線</h3><span class="hint">名單 → 提案 → 合約 → 續約</span></div>
+    <table><thead><tr><th>公司</th><th>聯絡人</th><th>階段</th><th>下次聯繫</th><th>商機金額</th><th>負責人</th><th>備註</th><th></th></tr></thead><tbody>
+      ${d.crm.map(r=>`<tr><td><b>${esc(r.company_name)}</b><div class="sub">${esc(r.marketing_need||'')}</div></td>
+        <td>${esc(r.contact_name)}<div class="sub">${esc(r.contact_title||'')} · ${esc(r.contact_method||'')}</div></td>
+        <td><span class="chip" style="background:var(--green-bg);color:var(--green)">${esc(r.stage)}</span><div class="sub">${esc(r.follow_up_status||'')}</div></td>
+        <td>${r.next_contact_date||'—'}</td><td>${fmt(r.deal_value)}</td><td>${esc(r.owner||'')}</td>
+        <td style="font-size:12.5px;max-width:220px">${esc(r.notes||'')}</td>
+        <td><button class="del-x" onclick="askDelete('crm','${r.id}','${esc(r.company_name)}')">✕</button></td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+async function createCRM(){
+  const company = $('#cr_company').value.trim();
+  if(!company) return toast('請先填寫公司 / 客戶名稱');
+  const body = {company_name:company,contact_name:$('#cr_contact').value,contact_title:$('#cr_title').value,
+    contact_method:$('#cr_method').value,stage:$('#cr_stage').value,follow_up_status:$('#cr_follow').value,
+    next_contact_date:$('#cr_date').value||null,deal_value:+$('#cr_value').value||0,
+    marketing_need:$('#cr_need').value,owner:$('#cr_owner').value,priority:$('#cr_priority').value,notes:$('#cr_notes').value};
+  const res = await apiPost('/api/crm', body);
+  state.data.crm.push({...body, id:res.id});
+  toast('已新增 CRM 紀錄：'+company);
+  render();
+}
+
+/* =====================================================
+   模組 10：管理員（會員管理、密碼重設）
+===================================================== */
+async function loadAdminData(){
+  if(!live() || !state.me?.is_admin) return;
+  try{
+    const h2 = {headers:authHeaders()};
+    const [users, resets] = await Promise.all([
+      fetch(API_BASE+'/api/admin/users', h2).then(r=>r.json()),
+      fetch(API_BASE+'/api/admin/resets', h2).then(r=>r.json()),
+    ]);
+    state.admin = {users: Array.isArray(users)?users:[], resets: Array.isArray(resets)?resets:[]};
+  }catch(e){ toast('管理員資料載入失敗'); }
+}
+function pageAdmin(){
+  const A = state.admin || {users:[], resets:[]};
+  return `
+  <h1 class="page-title">管理員</h1>
+  <p class="page-desc">處理忘記密碼申請、管理會員帳號。重設密碼後，請手動寄 Email 通知該使用者新密碼（系統不會自動寄信）。</p>
+  ${state.adminMsg?`<div class="panel" style="border-left:4px solid var(--green)"><b style="color:var(--green)">✔ ${esc(state.adminMsg)}</b></div>`:''}
+  <div class="panel"><div class="panel-head"><h3>待處理的密碼重設申請</h3><span class="hint">使用者於登入頁按「忘記密碼」後出現在這裡</span></div>
+    ${A.resets.length?`<table><thead><tr><th>帳號</th><th>Email</th><th>申請時間</th><th></th></tr></thead><tbody>
+      ${A.resets.map(r=>`<tr><td><b>${esc(r.username)}</b></td><td>${esc(r.email)}</td><td>${esc(r.requested_at||'')}</td>
+      <td style="white-space:nowrap"><button class="btn small" onclick="adminPick('${r.user_id}','${esc(r.username)}','${esc(r.email)}')">重設密碼</button>
+      <button class="del-x" onclick="adminDismiss('${r.id}')">忽略</button></td></tr>`).join('')}
+    </tbody></table>`:'<div class="kempty">目前沒有待處理申請</div>'}
+  </div>
+  <div class="panel"><div class="panel-head"><h3>重設使用者密碼</h3><span class="hint">重設後該使用者所有裝置將被登出</span></div>
+    <div class="grid3">
+      <div class="field"><label>目標帳號</label><input id="ad_user" value="${esc(state.adminTarget?.username||'')}" readonly style="background:var(--cream-2)"></div>
+      <div class="field"><label>新密碼（至少 8 字元）</label><input id="ad_pass" type="text" placeholder="設定後請寄信告知使用者"></div>
+      <div style="display:flex;align-items:flex-end"><button class="btn" onclick="adminDoReset()">確認重設</button></div>
+    </div>
+    <input type="hidden" id="ad_uid" value="${esc(state.adminTarget?.user_id||'')}">
+    <input type="hidden" id="ad_email" value="${esc(state.adminTarget?.email||'')}">
+  </div>
+  <div class="panel"><div class="panel-head"><h3>會員列表</h3><span class="hint">共 ${A.users.length} 位</span></div>
+    <table><thead><tr><th>帳號</th><th>Email</th><th>身分</th><th>建立時間</th><th></th></tr></thead><tbody>
+      ${A.users.map(u=>`<tr><td><b>${esc(u.username)}</b></td><td>${esc(u.email)}</td>
+      <td>${u.is_admin?'<span class="chip" style="background:var(--yellow-bg);color:var(--yellow)">總管理員</span>':'一般使用者'}</td>
+      <td>${esc(u.created_at||'')}</td>
+      <td><button class="btn small ghost" onclick="adminPick('${u.id}','${esc(u.username)}','${esc(u.email)}')">重設密碼</button></td></tr>`).join('')}
+    </tbody></table>
+  </div>`;
+}
+function adminPick(user_id, username, email){
+  state.adminTarget = {user_id, username, email};
+  state.adminMsg = '';
+  render();
+}
+async function adminDismiss(id){
+  if(live()){ try{ await fetch(API_BASE+'/api/admin/resets/'+id+'/dismiss',{method:'POST',headers:authHeaders()}); }catch(e){} }
+  state.admin.resets = state.admin.resets.filter(r=>r.id!==id);
+  toast('已忽略該申請'); render();
+}
+async function adminDoReset(){
+  const user_id = $('#ad_uid').value, username = $('#ad_user').value, email = $('#ad_email').value;
+  const pw = $('#ad_pass').value;
+  if(!user_id) return toast('請先從申請或會員列表點「重設密碼」選擇對象');
+  if(pw.length < 8) return toast('新密碼至少 8 個字元');
+  if(live()){
+    try{
+      const res = await fetch(API_BASE+'/api/admin/reset-password',{method:'POST',
+        headers:{'Content-Type':'application/json',...authHeaders()},
+        body:JSON.stringify({user_id, new_password:pw})});
+      const data = await res.json();
+      if(!res.ok) return toast(data.error||'重設失敗');
+    }catch(e){ return toast('連線失敗：'+e.message); }
+  }
+  state.admin.resets = (state.admin?.resets||[]).filter(r=>r.user_id!==user_id);
+  state.adminMsg = `已重設「${username}」的密碼。請手動寄 Email 至 ${email} 通知使用者新密碼，並提醒對方登入後妥善保管。`;
+  state.adminTarget = null;
+  render();
+}
+
+/* ---------------- 渲染主控 ---------------- */
+const PAGES = {overview:pageOverview, clients:pageClients, onboarding:pageOnboarding, training:pageTraining,
+  generate:pageGenerate, campaign:pageCampaign, schedule:pageSchedule, revenue:pageRevenue, crm:pageCRM, admin:pageAdmin};
+
+function render(){
+  let r = ROUTES.find(x=>x.key===state.route) || ROUTES[0];
+  if(r.adminOnly && !state.me?.is_admin){ r = ROUTES[0]; state.route = r.key; }
+  if(r.key==='admin' && live() && !state.adminLoaded){
+    state.adminLoaded = true;
+    loadAdminData().then(()=>{ if(state.route==='admin') { $('#app').innerHTML = PAGES.admin(); } });
+  }
+  $('#tbNum').textContent = r.num; $('#tbTitle').textContent = r.title; $('#tbSub').textContent = r.sub;
+  renderNav();
+  $('#app').innerHTML = PAGES[r.key]();
+}
+window.addEventListener('hashchange', ()=>{ state.route = location.hash.slice(1)||'overview'; render(); });
+
+(async function init(){
+  state.route = location.hash.slice(1)||'overview';
+  if(live()){
+    if(!TOKEN){ showGate(); renderNav(); return; }
+    await apiLoad();          // 若 token 過期，apiLoad 內會自動彈出登入
+  }else{
+    showGate();               // Demo 模式：顯示閘門並提供訪客入口
+  }
+  render();
+})();
+</script>
+</body>
+</html>

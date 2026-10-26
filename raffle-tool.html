@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>會員抽獎工具</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+<style>
+  body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang TC", "Microsoft JhengHei", sans-serif; }
+  @keyframes pop { 0% { transform: scale(.6); opacity:0; } 60% { transform: scale(1.05); opacity:1; } 100% { transform: scale(1); } }
+  .winner-pop { animation: pop .35s ease-out; }
+  .rolling { font-variant-numeric: tabular-nums; }
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen pb-24">
+
+  <header class="bg-gradient-to-r from-indigo-600 via-violet-600 to-fuchsia-600 text-white">
+    <div class="max-w-5xl mx-auto px-4 py-6">
+      <h1 class="text-2xl font-bold flex items-center gap-2">🎉 會員抽獎工具</h1>
+      <p id="subtitleText" class="text-indigo-100 text-sm mt-1">匯入 Excel 會員名單 → 系統自動篩選具抽獎資格的會員 → 設定獎項與條件 → 隨機抽出中獎名單</p>
+    </div>
+  </header>
+
+  <main class="max-w-5xl mx-auto px-4 mt-6 space-y-6">
+
+    <!-- Step 1: Upload -->
+    <section id="uploadSection" class="bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">1</span> 匯入會員資料</h2>
+        <div class="flex gap-2">
+          <button id="btnSample" class="text-sm px-3 py-1.5 rounded-lg border border-slate-300 hover:bg-slate-50">下載範例 Excel</button>
+          <button id="btnClearAll" class="text-sm px-3 py-1.5 rounded-lg border border-red-200 text-red-600 hover:bg-red-50">清除全部重新開始</button>
+        </div>
+      </div>
+
+      <div class="mt-4">
+        <label class="block border-2 border-dashed border-slate-300 rounded-lg p-6 text-center cursor-pointer hover:border-indigo-400 hover:bg-indigo-50/40 transition">
+          <input id="fileInput" type="file" accept=".xlsx,.xls,.csv" class="hidden">
+          <div class="text-slate-500 text-sm">
+            <span class="text-indigo-600 font-semibold">點擊選擇檔案</span> 或拖曳 Excel / CSV 檔案至此
+            <div class="text-xs text-slate-400 mt-1">支援 .xlsx / .xls / .csv，需包含「電話」「姓名」「Email」欄位；姓名必填，電話與 Email 至少需有一項才具抽獎資格</div>
+          </div>
+        </label>
+        <div id="fileName" class="text-xs text-slate-400 mt-2"></div>
+      </div>
+
+      <!-- Column mapping -->
+      <div id="mappingBox" class="hidden mt-5 border-t border-slate-100 pt-4">
+        <h3 class="text-sm font-semibold text-slate-600 mb-3">欄位對應（系統已嘗試自動辨識，請確認或手動調整）</h3>
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+          <div>
+            <label class="text-xs text-slate-500">姓名欄位</label>
+            <select id="mapName" class="mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm"></select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">電話欄位</label>
+            <select id="mapPhone" class="mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm"></select>
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">Email 欄位</label>
+            <select id="mapEmail" class="mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm"></select>
+          </div>
+        </div>
+        <button id="btnValidate" class="mt-4 px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-semibold hover:bg-indigo-700">套用並驗證資料</button>
+      </div>
+
+      <!-- Stats -->
+      <div id="statsBox" class="hidden mt-5 grid grid-cols-3 gap-3 text-center">
+        <div class="rounded-lg bg-slate-50 border border-slate-200 py-3">
+          <div class="text-2xl font-bold text-slate-700" id="statTotal">0</div>
+          <div class="text-xs text-slate-500">總筆數</div>
+        </div>
+        <div class="rounded-lg bg-emerald-50 border border-emerald-200 py-3">
+          <div class="text-2xl font-bold text-emerald-600" id="statValid">0</div>
+          <div class="text-xs text-emerald-600">具抽獎資格</div>
+        </div>
+        <div class="rounded-lg bg-red-50 border border-red-200 py-3">
+          <div class="text-2xl font-bold text-red-500" id="statInvalid">0</div>
+          <div class="text-xs text-red-500">資料不全（不可參加）</div>
+        </div>
+      </div>
+
+      <!-- Preview table -->
+      <div id="previewBox" class="hidden mt-4">
+        <div class="flex items-center justify-between mb-2">
+          <h3 class="text-sm font-semibold text-slate-600">會員名單預覽</h3>
+          <label class="text-xs text-slate-500 flex items-center gap-1">
+            <input type="checkbox" id="onlyInvalid"> 只顯示不合格資料
+          </label>
+        </div>
+        <div class="max-h-72 overflow-auto border border-slate-200 rounded-lg">
+          <table class="w-full text-sm">
+            <thead class="bg-slate-100 sticky top-0">
+              <tr class="text-left text-slate-500">
+                <th class="px-3 py-2">會員編號</th>
+                <th class="px-3 py-2">姓名</th>
+                <th class="px-3 py-2">電話</th>
+                <th class="px-3 py-2">Email</th>
+                <th class="px-3 py-2">狀態</th>
+              </tr>
+            </thead>
+            <tbody id="previewTbody"></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- Step 2: Prize settings -->
+    <section id="settingsSection" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">2</span> 抽獎設定</h2>
+        <button id="btnAddPrize" class="text-sm px-3 py-1.5 rounded-lg bg-indigo-50 text-indigo-600 font-semibold hover:bg-indigo-100">+ 新增獎項</button>
+      </div>
+
+      <label class="mt-4 flex items-center gap-2 text-sm text-slate-600">
+        <input type="checkbox" id="noDuplicateWinner" checked>
+        同一位會員在整場抽獎中只能中獎一次（依獎項設定順序依序抽出，已中獎者不再參加後續獎項）
+      </label>
+
+      <div id="prizeList" class="mt-4 space-y-4"></div>
+    </section>
+
+    <!-- Step 3: Open the presentation tab -->
+    <section id="presentLauncher" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">3</span> 開始抽獎</h2>
+        <button id="btnOpenPresent" class="px-5 py-2 rounded-lg bg-fuchsia-600 text-white font-bold hover:bg-fuchsia-700 shadow">🖥️ 在新分頁開啟抽獎畫面</button>
+      </div>
+      <p class="text-xs text-slate-500 mt-3">抽獎的啟動、開獎結果、遮蔽姓名切換、匯出名單，都在新分頁進行，可將該分頁投影給觀眾，不會顯示這裡的會員資料與獎項設定內容。若之後修改了設定，請再次點擊上方按鈕，將最新設定同步到抽獎畫面。</p>
+      <div id="presentSyncStatus" class="text-xs text-emerald-600 mt-2"></div>
+    </section>
+
+    <!-- Draw & results (shown only in the presentation tab, opened via ?present=1) -->
+    <section id="drawSection" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm p-5">
+      <div class="flex items-center justify-between flex-wrap gap-3">
+        <h2 class="text-lg font-bold flex items-center gap-2"><span class="w-6 h-6 rounded-full bg-indigo-600 text-white text-sm flex items-center justify-center">3</span> 開始抽獎</h2>
+        <div class="flex gap-2">
+          <button id="btnDraw" class="px-5 py-2 rounded-lg bg-fuchsia-600 text-white font-bold hover:bg-fuchsia-700 shadow">🎲 開始抽獎</button>
+          <button id="btnExport" class="hidden px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">📥 匯出中獎名單</button>
+          <button id="btnResetDraw" class="hidden px-4 py-2 rounded-lg border border-slate-300 text-sm font-semibold hover:bg-slate-50">重新抽獎</button>
+        </div>
+      </div>
+      <div id="presentStatus" class="text-xs text-emerald-600 mt-2"></div>
+      <label class="mt-3 flex items-center gap-2 text-sm text-slate-600">
+        <input type="checkbox" id="maskNames" checked>
+        遮蔽中獎姓名（畫面僅顯示如「周X宇」，匯出的 Excel 仍為完整姓名）
+      </label>
+      <div id="drawWarnings" class="mt-3 text-sm text-amber-600"></div>
+      <div id="resultsBox" class="mt-5 space-y-5"></div>
+    </section>
+
+  </main>
+
+<script>
+(() => {
+  const state = {
+    headers: [],
+    rows: [],        // raw parsed rows (array of objects keyed by header)
+    members: [],      // {id, name, phone, email, eligible, reason, raw}
+    results: null,    // [{prizeName, quantity, winners:[member,...], shortDrawn:bool}]
+    winMethod: null,  // Map<memberId, 'guaranteed'|'random'>, for export only
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const isPresentMode = new URLSearchParams(location.search).get('present') === '1';
+
+  // ---------- Helpers ----------
+  const EMPTY_TOKENS = new Set(['', '-', '—', '無', 'n/a', 'na', 'null', 'undefined']);
+  function isEmptyValue(v) {
+    if (v === null || v === undefined) return true;
+    const s = String(v).trim();
+    return EMPTY_TOKENS.has(s.toLowerCase());
+  }
+  function cleanStr(v) {
+    if (v === null || v === undefined) return '';
+    return String(v).trim();
+  }
+  function guessColumn(headers, keywords) {
+    const lower = headers.map(h => String(h).toLowerCase());
+    for (const kw of keywords) {
+      const idx = lower.findIndex(h => h.includes(kw));
+      if (idx !== -1) return headers[idx];
+    }
+    return '';
+  }
+  function secureRandomInt(maxExclusive) {
+    const arr = new Uint32Array(1);
+    const limit = Math.floor(0xFFFFFFFF / maxExclusive) * maxExclusive;
+    let x;
+    do { crypto.getRandomValues(arr); x = arr[0]; } while (x >= limit);
+    return x % maxExclusive;
+  }
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = secureRandomInt(i + 1);
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+  function pad(n, len) { return String(n).padStart(len, '0'); }
+
+  // Masks a name for on-screen display only (e.g. 周柏宇 -> 周X宇, 王明 -> 王X).
+  // Export always uses the full, unmasked name.
+  function maskName(name) {
+    const chars = Array.from(cleanStr(name));
+    if (chars.length <= 1) return name;
+    if (chars.length === 2) return chars[0] + 'X';
+    return chars[0] + 'X'.repeat(chars.length - 2) + chars[chars.length - 1];
+  }
+
+  // ---------- Presentation tab (opened via ?present=1) ----------
+  // Keeps member/prize setup private to the main tab; only the draw button
+  // and results are shown here, so this tab is safe to project to an audience.
+  let presentWin = null;
+  let pendingSync = null;
+  let pingTimer = null;
+
+  if (isPresentMode) {
+    document.title = '抽獎結果畫面';
+    if ($('subtitleText')) $('subtitleText').textContent = '抽獎結果畫面（可投影展示，不含會員資料與獎項設定）';
+    $('uploadSection').style.display = 'none';
+    $('settingsSection').style.display = 'none';
+    $('presentLauncher').style.display = 'none';
+    $('drawSection').classList.remove('hidden');
+    if (window.opener) {
+      try { window.opener.postMessage({ type: 'present-ready' }, '*'); } catch (e) {}
+    }
+  }
+
+  function getPrizeConfigs() {
+    return isPresentMode ? (state.syncedPrizes || []) : readPrizeConfigs();
+  }
+  function getNoDup() {
+    return isPresentMode ? !!state.syncedNoDup : $('noDuplicateWinner').checked;
+  }
+
+  function openPresentWindow() {
+    const prizes = readPrizeConfigs();
+    if (!prizes.length) { alert('請至少新增一個獎項。'); return; }
+    for (const p of prizes) {
+      if (!p.name) { alert('請填寫所有獎項的名稱。'); return; }
+      if (!p.qty || p.qty < 1) { alert(`獎項「${p.name}」的名額數量需大於 0。`); return; }
+    }
+    pendingSync = { members: state.members, prizeConfigs: prizes, noDup: $('noDuplicateWinner').checked };
+    const base = location.href.split('#')[0].split('?')[0];
+    presentWin = window.open(base + '?present=1', 'raffle_present_window');
+    if (!presentWin) { alert('瀏覽器封鎖了彈出視窗，請允許彈出視窗後再試一次。'); pendingSync = null; return; }
+    presentWin.focus();
+    $('presentSyncStatus').textContent = '正在連線抽獎畫面…';
+    if (pingTimer) clearInterval(pingTimer);
+    let tries = 0;
+    pingTimer = setInterval(() => {
+      tries++;
+      if (!pendingSync) { clearInterval(pingTimer); pingTimer = null; $('presentSyncStatus').textContent = '已同步設定到抽獎畫面。'; return; }
+      if (tries > 20) { clearInterval(pingTimer); pingTimer = null; $('presentSyncStatus').textContent = '同步逾時，請確認新分頁已開啟且未被瀏覽器封鎖，再試一次。'; return; }
+      try { presentWin.postMessage({ type: 'request-ready' }, '*'); } catch (e) {}
+    }, 300);
+  }
+  if ($('btnOpenPresent')) $('btnOpenPresent').addEventListener('click', openPresentWindow);
+
+  window.addEventListener('message', (e) => {
+    const data = e.data;
+    if (!data || !data.type) return;
+    if (!isPresentMode) {
+      if (data.type === 'present-ready' && pendingSync && presentWin && e.source === presentWin) {
+        presentWin.postMessage({ type: 'sync-data', ...pendingSync }, '*');
+        pendingSync = null;
+      }
+    } else {
+      if (data.type === 'request-ready') {
+        if (window.opener) window.opener.postMessage({ type: 'present-ready' }, '*');
+      } else if (data.type === 'sync-data') {
+        state.members = data.members || [];
+        state.syncedPrizes = data.prizeConfigs || [];
+        state.syncedNoDup = !!data.noDup;
+        if ($('presentStatus')) $('presentStatus').textContent = `已同步設定：${state.members.length} 位會員、${state.syncedPrizes.length} 個獎項。請按下方「開始抽獎」。`;
+      }
+    }
+  });
+
+  // ---------- Step 1: Upload & parse ----------
+  $('fileInput').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) handleFile(file);
+  });
+
+  function handleFile(file) {
+    $('fileName').textContent = `已選擇檔案：${file.name}`;
+    const reader = new FileReader();
+    reader.onload = (evt) => {
+      try {
+        const data = new Uint8Array(evt.target.result);
+        const wb = XLSX.read(data, { type: 'array', cellDates: true });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const json = XLSX.utils.sheet_to_json(sheet, { defval: '' });
+        if (!json.length) { alert('檔案內沒有資料，請確認檔案內容。'); return; }
+        state.headers = Object.keys(json[0]);
+        state.rows = json;
+        setupMapping();
+      } catch (err) {
+        alert('讀取檔案失敗，請確認檔案格式是否正確。\n' + err.message);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  }
+
+  function setupMapping() {
+    const nameGuess = guessColumn(state.headers, ['姓名', '名字', 'name']);
+    const phoneGuess = guessColumn(state.headers, ['電話', '手機', '聯絡電話', '連絡電話', 'phone', 'tel', 'mobile']);
+    const emailGuess = guessColumn(state.headers, ['email', 'e-mail', '信箱', '電子郵件', 'mail']);
+
+    fillSelect($('mapName'), state.headers, nameGuess);
+    fillSelect($('mapPhone'), state.headers, phoneGuess);
+    fillSelect($('mapEmail'), state.headers, emailGuess);
+
+    $('mappingBox').classList.remove('hidden');
+  }
+
+  function fillSelect(select, headers, guessed) {
+    select.innerHTML = '<option value="">-- 請選擇 --</option>' +
+      headers.map(h => `<option value="${escapeAttr(h)}" ${h === guessed ? 'selected' : ''}>${escapeHtml(h)}</option>`).join('');
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+  }
+  function escapeAttr(s) { return escapeHtml(s); }
+
+  $('btnValidate').addEventListener('click', () => {
+    const nameCol = $('mapName').value, phoneCol = $('mapPhone').value, emailCol = $('mapEmail').value;
+    if (!nameCol || !phoneCol || !emailCol) { alert('請選擇姓名、電話、Email 對應的欄位。'); return; }
+
+    const idLen = Math.max(4, String(state.rows.length).length);
+    state.members = state.rows.map((row, i) => {
+      const name = cleanStr(row[nameCol]);
+      const phone = cleanStr(row[phoneCol]);
+      const email = cleanStr(row[emailCol]);
+      const nameMissing = isEmptyValue(name);
+      const contactMissing = isEmptyValue(phone) && isEmptyValue(email);
+      const missing = [];
+      if (nameMissing) missing.push('姓名');
+      if (contactMissing) missing.push('電話與Email（至少需一項）');
+      return {
+        id: 'M' + pad(i + 1, idLen),
+        name, phone, email,
+        eligible: !nameMissing && !contactMissing,
+        reason: missing.length ? `缺少：${missing.join('、')}` : '',
+        raw: row,
+      };
+    });
+
+    renderPreview();
+    buildPrizeConditionColumns();
+    $('settingsSection').classList.remove('hidden');
+    $('presentLauncher').classList.remove('hidden');
+    if ($('prizeList').children.length === 0) addPrizeCard();
+  });
+
+  function renderPreview() {
+    const total = state.members.length;
+    const valid = state.members.filter(m => m.eligible).length;
+    $('statTotal').textContent = total;
+    $('statValid').textContent = valid;
+    $('statInvalid').textContent = total - valid;
+    $('statsBox').classList.remove('hidden');
+    $('previewBox').classList.remove('hidden');
+    renderPreviewRows();
+  }
+
+  function renderPreviewRows() {
+    const onlyInvalid = $('onlyInvalid').checked;
+    const list = onlyInvalid ? state.members.filter(m => !m.eligible) : state.members;
+    $('previewTbody').innerHTML = list.map(m => `
+      <tr class="border-t border-slate-100 ${m.eligible ? '' : 'bg-red-50'}">
+        <td class="px-3 py-1.5 font-mono text-xs">${m.id}</td>
+        <td class="px-3 py-1.5">${escapeHtml(m.name) || '<span class="text-slate-300">—</span>'}</td>
+        <td class="px-3 py-1.5">${escapeHtml(m.phone) || '<span class="text-slate-300">—</span>'}</td>
+        <td class="px-3 py-1.5">${escapeHtml(m.email) || '<span class="text-slate-300">—</span>'}</td>
+        <td class="px-3 py-1.5">${m.eligible
+          ? '<span class="text-emerald-600 font-semibold">✔ 合格</span>'
+          : `<span class="text-red-500 font-semibold">✘ ${escapeHtml(m.reason)}</span>`}</td>
+      </tr>
+    `).join('');
+  }
+  $('onlyInvalid').addEventListener('change', renderPreviewRows);
+
+  // ---------- Step 2: Prizes & conditions ----------
+  let prizeSeq = 0;
+  let conditionColumns = [];
+
+  function buildPrizeConditionColumns() {
+    // any original column can be used as a filter condition
+    conditionColumns = state.headers.slice();
+  }
+
+  function addPrizeCard() {
+    const pid = ++prizeSeq;
+    const card = document.createElement('div');
+    card.className = 'border border-slate-200 rounded-lg p-4 bg-slate-50/50';
+    card.dataset.pid = pid;
+    card.innerHTML = `
+      <div class="flex items-start justify-between gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 flex-1">
+          <div>
+            <label class="text-xs text-slate-500">獎項名稱</label>
+            <input type="text" class="prizeName mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm" placeholder="例如：頭獎 iPhone">
+          </div>
+          <div>
+            <label class="text-xs text-slate-500">名額數量</label>
+            <input type="number" min="1" value="1" class="prizeQty mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-sm">
+          </div>
+        </div>
+        <button class="btnRemovePrize text-red-400 hover:text-red-600 text-sm mt-5">✕ 刪除</button>
+      </div>
+      <div class="mt-3">
+        <div class="flex items-center justify-between">
+          <label class="text-xs text-slate-500">抽獎條件（可選，需符合以下所有條件才可參加此獎項抽獎）</label>
+          <button class="btnAddCondition text-xs text-indigo-600 font-semibold hover:underline">+ 新增條件</button>
+        </div>
+        <p class="text-[11px] text-slate-400 mt-1">日期欄位（如註冊時間）可用「大於等於／小於等於」設定日期門檻，條件值請填 <code>年-月-日</code>，例如 <code>2024-01-15</code> 代表「2024年1月15日（含）之後」。</p>
+        <div class="conditionList mt-2 space-y-2"></div>
+      </div>
+      <div class="mt-3">
+        <textarea class="guaranteedList mt-1 w-full border border-slate-300 rounded-lg px-2 py-1.5 text-xs" rows="2" placeholder="備註（選填）"></textarea>
+      </div>
+    `;
+    card.querySelector('.btnRemovePrize').addEventListener('click', () => card.remove());
+    card.querySelector('.btnAddCondition').addEventListener('click', () => addConditionRow(card));
+    $('prizeList').appendChild(card);
+  }
+
+  function addConditionRow(card) {
+    if (!conditionColumns.length) { alert('目前無其他可用欄位設定條件。'); return; }
+    const row = document.createElement('div');
+    row.className = 'flex flex-wrap gap-2 items-center';
+    row.innerHTML = `
+      <select class="condCol border border-slate-300 rounded-lg px-2 py-1.5 text-xs">
+        ${conditionColumns.map(c => `<option value="${escapeAttr(c)}">${escapeHtml(c)}</option>`).join('')}
+      </select>
+      <select class="condOp border border-slate-300 rounded-lg px-2 py-1.5 text-xs">
+        <option value="eq">等於</option>
+        <option value="neq">不等於</option>
+        <option value="contains">包含</option>
+        <option value="ncontains">不包含</option>
+        <option value="gte">大於等於（數值／日期）</option>
+        <option value="lte">小於等於（數值／日期）</option>
+        <option value="notempty">非空值</option>
+        <option value="empty">為空值</option>
+      </select>
+      <input type="text" class="condVal border border-slate-300 rounded-lg px-2 py-1.5 text-xs flex-1 min-w-[100px]" placeholder="條件值">
+      <button class="btnRemoveCond text-red-400 hover:text-red-600 text-xs">✕</button>
+    `;
+    const opSelect = row.querySelector('.condOp');
+    const valInput = row.querySelector('.condVal');
+    function syncValInput() {
+      const op = opSelect.value;
+      valInput.classList.toggle('hidden', op === 'empty' || op === 'notempty');
+      valInput.placeholder = (op === 'gte' || op === 'lte') ? '例如：100 或 2024-01-15' : '條件值';
+    }
+    opSelect.addEventListener('change', syncValInput);
+    syncValInput();
+    row.querySelector('.btnRemoveCond').addEventListener('click', () => row.remove());
+    card.querySelector('.conditionList').appendChild(row);
+  }
+
+  $('btnAddPrize').addEventListener('click', addPrizeCard);
+
+  function readPrizeConfigs() {
+    const cards = [...$('prizeList').children];
+    return cards.map(card => {
+      const name = card.querySelector('.prizeName').value.trim();
+      const qty = parseInt(card.querySelector('.prizeQty').value, 10) || 0;
+      const conditions = [...card.querySelectorAll('.conditionList > div')].map(r => ({
+        col: r.querySelector('.condCol').value,
+        op: r.querySelector('.condOp').value,
+        val: r.querySelector('.condVal').value,
+      }));
+      const guaranteedRaw = card.querySelector('.guaranteedList').value;
+      return { name, qty, conditions, guaranteedRaw };
+    });
+  }
+
+  function normalizePhone(s) { return String(s).replace(/\D/g, ''); }
+
+  // Last-9-digit comparison absorbs leading-0 vs +886/886 country-code
+  // differences in Taiwan mobile numbers (0912345678 vs +886912345678).
+  function phoneSuffix(s) {
+    const d = normalizePhone(s);
+    return d.length >= 9 ? d.slice(-9) : d;
+  }
+
+  // Lenient ID match: same letter prefix + same numeric value, ignoring
+  // zero-padding (e.g. "M1" matches "M0001").
+  function idLooseMatch(token, id) {
+    const a = /^([a-z]*)0*(\d+)$/i.exec(token.trim());
+    const b = /^([a-z]*)0*(\d+)$/i.exec(id);
+    if (!a || !b) return false;
+    return a[1].toLowerCase() === b[1].toLowerCase() && a[2] === b[2];
+  }
+
+  function matchToken(token, member) {
+    const t = token.trim().toLowerCase();
+    if (!t) return false;
+    if (member.id.toLowerCase() === t) return true;
+    if (idLooseMatch(token, member.id)) return true;
+    const tPhone = normalizePhone(token);
+    if (tPhone.length >= 7 && member.phone) {
+      if (normalizePhone(member.phone) === tPhone) return true;
+      const ts = phoneSuffix(token), ms = phoneSuffix(member.phone);
+      if (ts.length === 9 && ts === ms) return true;
+    }
+    if (member.email && member.email.toLowerCase() === t) return true;
+    return false;
+  }
+
+  // Resolves a "指定必中名單" textarea value (member IDs / phones / emails /
+  // exact names, comma, semicolon or newline separated) into matched member
+  // records. Falls back to an exact name match only when it is unambiguous
+  // (exactly one member has that name); ambiguous or unrecognized entries
+  // are reported as not-found rather than guessed.
+  function resolveGuaranteedMembers(raw) {
+    const tokens = [...new Set(String(raw || '').split(/[\n,，、;；]+/).map(t => t.trim()).filter(Boolean))];
+    const matchedMembers = [];
+    const notFoundTokens = [];
+    const ineligibleMembers = [];
+    tokens.forEach(token => {
+      let matches = state.members.filter(m => matchToken(token, m));
+      if (!matches.length) {
+        matches = state.members.filter(m => m.name && m.name.toLowerCase() === token.toLowerCase());
+      }
+      if (matches.length !== 1) { notFoundTokens.push(token); return; }
+      const member = matches[0];
+      if (!member.eligible) { ineligibleMembers.push(member); return; }
+      if (!matchedMembers.some(m => m.id === member.id)) matchedMembers.push(member);
+    });
+    return { matchedMembers, notFoundTokens, ineligibleMembers };
+  }
+
+  // Converts a cell value or typed condition value into a comparable number.
+  // Handles plain numbers, Excel date cells (JS Date via cellDates:true) and
+  // typed date/date-time strings, so "大於等於/小於等於" also works for date columns.
+  function toComparable(v) {
+    if (v instanceof Date) return v.getTime();
+    if (typeof v === 'number') return v;
+    const s = cleanStr(v);
+    if (s === '') return NaN;
+    if (/^-?\d+(\.\d+)?$/.test(s)) return parseFloat(s);
+    const t = Date.parse(s.replace(/\//g, '-'));
+    return isNaN(t) ? NaN : t;
+  }
+
+  function matchCondition(member, cond) {
+    const raw = member.raw[cond.col];
+    const strVal = cleanStr(raw instanceof Date ? raw.toLocaleString() : raw);
+    switch (cond.op) {
+      case 'eq': return strVal.toLowerCase() === cleanStr(cond.val).toLowerCase();
+      case 'neq': return strVal.toLowerCase() !== cleanStr(cond.val).toLowerCase();
+      case 'contains': return strVal.toLowerCase().includes(cleanStr(cond.val).toLowerCase());
+      case 'ncontains': return !strVal.toLowerCase().includes(cleanStr(cond.val).toLowerCase());
+      case 'gte': { const a = toComparable(raw), b = toComparable(cond.val); return !isNaN(a) && !isNaN(b) && a >= b; }
+      case 'lte': { const a = toComparable(raw), b = toComparable(cond.val); return !isNaN(a) && !isNaN(b) && a <= b; }
+      case 'notempty': return !isEmptyValue(raw);
+      case 'empty': return isEmptyValue(raw);
+      default: return true;
+    }
+  }
+
+  // ---------- Step 3: Draw ----------
+  $('btnDraw').addEventListener('click', runDraw);
+  $('btnResetDraw').addEventListener('click', runDraw);
+
+  function runDraw() {
+    if (isPresentMode && (!state.members || !state.members.length)) {
+      alert('尚未收到抽獎設定資料，請在主頁面點擊「在新分頁開啟抽獎畫面」完成同步後再試一次。');
+      return;
+    }
+
+    const prizes = getPrizeConfigs();
+    const warnings = [];
+
+    if (!prizes.length) { alert('請至少新增一個獎項。'); return; }
+    for (const p of prizes) {
+      if (!p.name) { alert('請填寫所有獎項的名稱。'); return; }
+      if (!p.qty || p.qty < 1) { alert(`獎項「${p.name}」的名額數量需大於 0。`); return; }
+    }
+
+    const noDup = getNoDup();
+    const wonIds = new Set();
+    const winMethod = new Map(); // member id -> 'guaranteed' | 'random', for export only
+    const eligiblePool = state.members.filter(m => m.eligible);
+    const results = [];
+
+    for (const prize of prizes) {
+      let pool = eligiblePool.filter(m => prize.conditions.every(c => matchCondition(m, c)));
+      if (noDup) pool = pool.filter(m => !wonIds.has(m.id));
+
+      // Guaranteed-list diagnostics are intentionally kept out of any on-screen
+      // text (console only) since this section may be projected to an audience.
+      const { matchedMembers, notFoundTokens, ineligibleMembers } = resolveGuaranteedMembers(prize.guaranteedRaw);
+      let guaranteed = matchedMembers;
+      if (noDup) {
+        const alreadyWon = guaranteed.filter(m => wonIds.has(m.id));
+        if (alreadyWon.length) console.warn(`[${prize.name}] already won earlier, skipped:`, alreadyWon.map(m => m.id));
+        guaranteed = guaranteed.filter(m => !wonIds.has(m.id));
+      }
+      if (guaranteed.length > prize.qty) {
+        console.warn(`[${prize.name}] exceeds quota (${prize.qty}), truncated to first ${prize.qty}`);
+        guaranteed = guaranteed.slice(0, prize.qty);
+      }
+      if (notFoundTokens.length) console.warn(`[${prize.name}] not found:`, notFoundTokens);
+      if (ineligibleMembers.length) console.warn(`[${prize.name}] ineligible, skipped:`, ineligibleMembers.map(m => m.id));
+
+      const guaranteedIds = new Set(guaranteed.map(m => m.id));
+      const randomPool = pool.filter(m => !guaranteedIds.has(m.id));
+      const remainingQty = prize.qty - guaranteed.length;
+      const randomWinners = shuffle(randomPool).slice(0, Math.max(0, remainingQty));
+
+      guaranteed.forEach(m => winMethod.set(m.id, 'guaranteed'));
+      randomWinners.forEach(m => winMethod.set(m.id, 'random'));
+
+      const winners = shuffle(guaranteed.concat(randomWinners));
+      const shortDrawn = winners.length < prize.qty;
+      if (shortDrawn) warnings.push(`「${prize.name}」符合資格的名單僅 ${winners.length} 人，少於設定名額 ${prize.qty} 人，已全數抽出。`);
+
+      winners.forEach(w => wonIds.add(w.id));
+      results.push({ prizeName: prize.name, quantity: prize.qty, winners, shortDrawn });
+    }
+    state.winMethod = winMethod;
+
+    state.results = results;
+    $('drawWarnings').innerHTML = warnings.map(w => `⚠️ ${escapeHtml(w)}`).join('<br>');
+    renderResultsWithAnimation(results);
+    $('btnExport').classList.remove('hidden');
+    $('btnResetDraw').classList.remove('hidden');
+  }
+
+  function renderResultsWithAnimation(results) {
+    $('resultsBox').innerHTML = results.map((r, ri) => `
+      <div class="border border-slate-200 rounded-lg p-4">
+        <div class="flex items-center justify-between mb-3">
+          <h3 class="font-bold text-fuchsia-700">🏆 ${escapeHtml(r.prizeName)}</h3>
+          <span class="text-xs text-slate-400">名額 ${r.quantity} 人${r.shortDrawn ? '（實際抽出 ' + r.winners.length + ' 人）' : ''}</span>
+        </div>
+        <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-2" id="prizeWinners-${ri}"></div>
+      </div>
+    `).join('');
+
+    results.forEach((r, ri) => {
+      const container = $(`prizeWinners-${ri}`);
+      r.winners.forEach((w, wi) => {
+        const cell = document.createElement('div');
+        cell.className = 'rolling border border-fuchsia-200 bg-fuchsia-50 rounded-lg px-3 py-2 text-center text-sm';
+        cell.textContent = '抽獎中…';
+        container.appendChild(cell);
+        const delay = 500 + ri * 150 + wi * 120;
+        setTimeout(() => {
+          cell.classList.add('winner-pop');
+          cell.dataset.name = w.name;
+          cell.innerHTML = `<div class="font-mono text-xs text-fuchsia-500">${w.id}</div><div class="font-bold text-slate-700">${escapeHtml(nameForDisplay(w.name))}</div>`;
+        }, delay);
+      });
+      if (!r.winners.length) {
+        container.innerHTML = '<div class="text-sm text-slate-400 col-span-full">目前沒有符合資格的會員可供抽出。</div>';
+      }
+    });
+  }
+
+  function nameForDisplay(name) {
+    return $('maskNames').checked ? maskName(name) : name;
+  }
+
+  $('maskNames').addEventListener('change', () => {
+    document.querySelectorAll('#resultsBox .winner-pop[data-name]').forEach(cell => {
+      const nameDiv = cell.querySelector('.font-bold');
+      if (nameDiv) nameDiv.textContent = nameForDisplay(cell.dataset.name);
+    });
+  });
+
+  // ---------- Export ----------
+  $('btnExport').addEventListener('click', () => {
+    if (!state.results) return;
+    const rows = [];
+    state.results.forEach(r => {
+      r.winners.forEach(w => {
+        const method = state.winMethod && state.winMethod.get(w.id) === 'guaranteed' ? '指定保留' : '隨機抽出';
+        rows.push({ 獎項: r.prizeName, 會員編號: w.id, 姓名: w.name, 電話: w.phone, Email: w.email, 中獎方式: method });
+      });
+    });
+    if (!rows.length) { alert('沒有中獎資料可匯出。'); return; }
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '中獎名單');
+    XLSX.writeFile(wb, `抽獎結果_${new Date().toISOString().slice(0,10)}.xlsx`);
+  });
+
+  // ---------- Sample template ----------
+  $('btnSample').addEventListener('click', () => {
+    const ws = XLSX.utils.json_to_sheet([
+      { 姓名: '王小明', 電話: '0912345678', Email: 'wang@example.com' },
+      { 姓名: '陳小華', 電話: '0922333444', Email: 'chen@example.com' },
+      { 姓名: '林小美', 電話: '', Email: 'lin@example.com' },
+      { 姓名: '', 電話: '0955666777', Email: 'nobody@example.com' },
+    ]);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, '會員資料');
+    XLSX.writeFile(wb, '抽獎會員名單範例.xlsx');
+  });
+
+  // ---------- Reset ----------
+  $('btnClearAll').addEventListener('click', () => {
+    if (!confirm('確定要清除所有已匯入的資料與設定嗎？')) return;
+    location.reload();
+  });
+
+})();
+</script>
+</body>
+</html>

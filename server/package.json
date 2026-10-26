@@ -1,0 +1,16 @@
+{
+  "name": "esg-ai-diagnostic-server",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Backend API for ESG AI 智能成熟度診斷系統 (V1.1) - stores submissions and generated reports in SQLite",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "cors": "^2.8.5",
+    "express": "^4.19.2"
+  }
+}

@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ESG AI 智能成熟度診斷系統 V1.0</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  body { font-family: 'Noto Sans TC', 'Microsoft JhengHei', sans-serif; }
+  .option-btn.selected { background-color: #16a34a; color: white; border-color: #16a34a; }
+  @media print { .no-print { display: none !important; } }
+</style>
+</head>
+<body class="bg-slate-50 min-h-screen text-slate-800">
+
+<div id="app" class="max-w-4xl mx-auto px-4 py-8"></div>
+
+<script>
+/* ===================== 資料定義 ===================== */
+
+const basicQuestions = [
+  { id:'q1', title:'Q1 公司產業類別', options:['製造業','食品加工業','農業／農企業','零售業','服務業','科技業','物流運輸業','其他'] },
+  { id:'q2', title:'Q2 員工人數', options:['1-10人','11-50人','51-100人','101-500人','500人以上'] },
+  { id:'q3', title:'Q3 年營業額', options:['1000萬以下','1000萬~5000萬','5000萬~1億','1億~10億','10億以上'] },
+  { id:'q4', title:'Q4 是否出口產品？', options:['是','否'] },
+  { id:'q5', title:'Q5 是否為大型企業供應商？', options:['是','否','不確定'] },
+];
+
+const scaleOptions = [
+  { label:'已完成', value:3 },
+  { label:'執行中', value:2 },
+  { label:'規劃中', value:1 },
+  { label:'尚未開始', value:0 },
+];
+
+const E = [
+  ['E1','是否完成組織溫室氣體盤查？'],
+  ['E2','是否建立能源使用統計制度？'],
+  ['E3','是否追蹤年度用電量？'],
+  ['E4','是否設定節能目標？'],
+  ['E5','是否設定減碳目標？'],
+  ['E6','是否評估氣候變遷風險？'],
+  ['E7','是否監測用水量？'],
+  ['E8','是否有廢棄物管理措施？'],
+  ['E9','是否進行綠色採購？'],
+  ['E10','是否使用再生能源？'],
+];
+
+const S = [
+  ['S1','是否提供勞健保？'],
+  ['S2','是否有職業安全衛生制度？'],
+  ['S3','是否定期教育訓練？'],
+  ['S4','是否有員工績效考核制度？'],
+  ['S5','是否有員工意見反映管道？'],
+  ['S6','是否定期進行員工滿意度調查？'],
+  ['S7','是否推動職場多元平等措施？'],
+  ['S8','是否有客戶個資保護制度？'],
+  ['S9','是否有客戶滿意度調查？'],
+  ['S10','是否參與社區公益活動？'],
+];
+
+const G = [
+  ['G1','是否指定ESG負責人？'],
+  ['G2','是否成立ESG推動小組？'],
+  ['G3','高階主管是否參與ESG決策？'],
+  ['G4','是否制定ESG政策？'],
+  ['G5','是否建立誠信經營規範？'],
+  ['G6','是否建立風險管理制度？'],
+  ['G7','是否定期檢討ESG績效？'],
+  ['G8','是否揭露ESG資訊？'],
+  ['G9','是否建立利害關係人溝通機制？'],
+  ['G10','是否進行供應商ESG管理？'],
+  ['G11','是否將ESG納入企業策略？'],
+  ['G12','是否有永續發展目標？'],
+  ['G13','是否定期向管理階層報告ESG成果？'],
+  ['G14','是否開始準備永續報告書？'],
+];
+
+const levels = [
+  { min:0, max:25, name:'Level 1 起步階段', traits:['ESG認知不足','無專責人員','無管理制度'],
+    advice:['指定ESG窗口','建立能源統計','完成基礎教育訓練'] },
+  { min:26, max:50, name:'Level 2 建置階段', traits:['已有部分制度','開始碳盤查規劃'],
+    advice:['完成碳盤查','建立供應商管理','制定ESG政策'] },
+  { min:51, max:75, name:'Level 3 管理階段', traits:['已有ESG制度','已進行績效追蹤'],
+    advice:['建立利害關係人機制','發展永續KPI','強化資訊揭露'] },
+  { min:76, max:100, name:'Level 4 領先階段', traits:['ESG融入策略','已建立管理系統'],
+    advice:['導入TCFD','發布永續報告書','建立供應鏈減碳計畫'] },
+];
+
+const industryPlans = {
+  '製造業': ['完成製程能耗盤查','建立節能設備改善計畫','推動供應商ESG自評','導入循環經濟物料管理','建立碳足跡盤查試算','設定中期減碳目標','強化職安衛管理系統','建立綠色採購清單','發布內部ESG季報','導入再生能源評估','完成GHG盤查書面化','籌備永續報告書初稿'],
+  '農業／農企業': ['建立農藥與肥料使用紀錄','推動土地與水資源管理計畫','評估氣候風險對產量影響','建立農產品溯源機制','推動友善環境耕作措施','建立員工安全衛生規範','評估有機/永續認證可行性','建立供應鏈合作農戶輔導','設定減碳/減塑目標','強化社區合作關係','建立ESG基礎資料庫','籌備永續報告書初稿'],
+  '食品加工業': ['建立食品安全與品質管理制度','推動節水與廢水管理計畫','建立原物料供應商管理機制','評估包裝減塑與循環方案','設定能源使用效率目標','強化員工衛生教育訓練','建立食品溯源系統','推動綠色採購原料比例','設定減碳目標與行動方案','建立客戶滿意度調查機制','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '零售業': ['建立門市能源使用統計','推動包裝減量與循環措施','建立供應商社會責任規範','設定用電與用水節能目標','強化員工教育訓練制度','建立顧客個資保護機制','推動在地採購與公益合作','建立廢棄物減量計畫','設定中期ESG目標','強化資訊揭露透明度','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '服務業': ['建立辦公室能源使用統計','推動數位化減紙作業','建立員工福利與培訓制度','強化客戶資料保護機制','設定碳排放盤查範圍','建立供應商評選ESG準則','推動公益與社區參與計畫','建立員工滿意度調查機制','設定ESG管理目標','強化高階主管ESG決策參與','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '科技業': ['建立資料中心能源使用統計','推動綠色軟硬體採購','建立資安與客戶資料保護制度','設定碳中和路徑與目標','建立供應鏈ESG盡職調查','推動遠距/彈性工作節能措施','強化員工多元平等措施','建立利害關係人溝通機制','導入TCFD氣候風險評估','設定再生能源使用比例','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '物流運輸業': ['建立車隊油耗與碳排統計','推動低碳/電動車隊轉型評估','建立倉儲能源管理制度','設定運輸路線優化節能目標','強化駕駛人員安全教育訓練','建立供應商與委外商管理機制','推動包裝減量與回收措施','建立客戶服務滿意度調查','設定中期減碳目標','強化氣候風險韌性評估','彙整ESG關鍵指標','籌備永續報告書初稿'],
+  '其他': ['指定ESG專責人員','建立基礎能源與用水統計','設定短期節能減碳目標','建立員工教育訓練制度','建立供應商管理機制','強化客戶與資訊安全保護','建立利害關係人溝通管道','設定中期ESG目標','強化資訊揭露透明度','建立風險管理制度','彙整ESG關鍵指標','籌備永續報告書初稿'],
+};
+
+/* ===================== 狀態 ===================== */
+const allSections = [
+  { key:'basic', title:'企業基本資料', items: basicQuestions, type:'basic' },
+  { key:'E', title:'Environment（環境）30分', items: E, type:'scale' },
+  { key:'S', title:'Social（社會）30分', items: S, type:'scale' },
+  { key:'G', title:'Governance（治理）40分', items: G, type:'scale' },
+];
+
+let step = 0; // 0..3 question sections, 4 = report
+let answers = {}; // id -> value (string for basic, number for scale)
+
+/* ===================== 渲染 ===================== */
+function render() {
+  const app = document.getElementById('app');
+  if (step < allSections.length) {
+    app.innerHTML = renderSection(allSections[step]);
+    bindSectionEvents();
+  } else {
+    app.innerHTML = renderReport();
+    bindReportEvents();
+    drawRadar();
+  }
+}
+
+function renderProgress() {
+  const total = allSections.length;
+  return `<div class="flex items-center gap-2 mb-6 no-print">
+    ${allSections.map((s,i)=>`<div class="flex-1 h-2 rounded ${i<=step?'bg-green-600':'bg-slate-200'}"></div>`).join('')}
+  </div>`;
+}
+
+function renderSection(section) {
+  const isBasic = section.type === 'basic';
+  const itemsHtml = section.items.map(item => {
+    if (isBasic) {
+      const { id, title, options } = item;
+      const current = answers[id];
+      return `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
+        <p class="font-semibold mb-3">${title}</p>
+        <div class="flex flex-wrap gap-2">
+          ${options.map(opt => `<button data-qid="${id}" data-val="${opt}" class="option-btn px-4 py-2 rounded-lg border text-sm border-slate-300 hover:border-green-500 ${current===opt?'selected':''}">${opt}</button>`).join('')}
+        </div>
+      </div>`;
+    } else {
+      const [code, text] = item;
+      const current = answers[code];
+      return `<div class="bg-white rounded-xl shadow-sm p-5 mb-4">
+        <p class="font-semibold mb-3">${code} ${text}</p>
+        <div class="flex flex-wrap gap-2">
+          ${scaleOptions.map(opt => `<button data-qid="${code}" data-val="${opt.value}" class="option-btn px-4 py-2 rounded-lg border text-sm border-slate-300 hover:border-green-500 ${current===opt.value?'selected':''}">${opt.label}（${opt.value}）</button>`).join('')}
+        </div>
+      </div>`;
+    }
+  }).join('');
+
+  const canNext = section.items.every(item => {
+    const id = isBasic ? item.id : item[0];
+    return answers[id] !== undefined;
+  });
+
+  return `
+    <h1 class="text-2xl font-bold mb-1 text-center">ESG AI 智能成熟度診斷系統</h1>
+    <p class="text-center text-slate-500 mb-6">V1.0</p>
+    ${renderProgress()}
+    <h2 class="text-xl font-bold mb-4">${section.title}</h2>
+    ${itemsHtml}
+    <div class="flex justify-between mt-6 no-print">
+      <button id="prevBtn" class="px-5 py-2 rounded-lg border border-slate-300 ${step===0?'opacity-40 cursor-not-allowed':''}" ${step===0?'disabled':''}>上一步</button>
+      <button id="nextBtn" class="px-5 py-2 rounded-lg bg-green-600 text-white ${canNext?'':'opacity-40 cursor-not-allowed'}" ${canNext?'':'disabled'}>${step===allSections.length-1?'產生診斷報告':'下一步'}</button>
+    </div>
+  `;
+}
+
+function bindSectionEvents() {
+  document.querySelectorAll('.option-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const qid = btn.dataset.qid;
+      const raw = btn.dataset.val;
+      const val = isNaN(raw) ? raw : Number(raw);
+      answers[qid] = val;
+      render();
+    });
+  });
+  const prevBtn = document.getElementById('prevBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  if (prevBtn) prevBtn.addEventListener('click', () => { if(step>0){ step--; render(); } });
+  if (nextBtn && !nextBtn.disabled) nextBtn.addEventListener('click', () => { step++; render(); });
+}
+
+/* ===================== 計分邏輯 ===================== */
+function sumScale(items) {
+  return items.reduce((acc,[code]) => acc + (answers[code] ?? 0), 0);
+}
+
+function computeScores() {
+  const eRaw = sumScale(E);            // max 30
+  const sRaw = sumScale(S);            // max 30
+  const gRaw = sumScale(G);            // max 42 -> scale to 40
+  const gScore = Math.round(gRaw * (40/42) * 10) / 10;
+  const total = Math.round((eRaw + sRaw + gScore) * 10) / 10;
+
+  const level = levels.find(l => total >= l.min && total <= l.max) || levels[levels.length-1];
+
+  // radar dimensions (0-100 normalized)
+  const envPct = Math.round(eRaw/30*100);
+  const socPct = Math.round(sRaw/30*100);
+  const govPct = Math.round(gRaw/42*100);
+  const climatePct = Math.round((answers['E6']??0)/3*100);
+  const supplyPct = Math.round((answers['G10']??0)/3*100);
+
+  return { eRaw, sRaw, gRaw, gScore, total, level, envPct, socPct, govPct, climatePct, supplyPct };
+}
+
+function buildRiskAnalysis() {
+  const high = [], mid = [], low = [];
+  const checks = [
+    { code:'E1', label:'尚未完成溫室氣體盤查' },
+    { code:'G10', label:'未建立供應商ESG管理' },
+    { code:'E5', label:'未設定減碳目標' },
+    { code:'E4', label:'未設定節能目標' },
+    { code:'G4', label:'未制定ESG政策' },
+    { code:'G8', label:'未揭露ESG資訊' },
+    { code:'S3', label:'教育訓練制度' },
+    { code:'S1', label:'勞健保提供' },
+    { code:'G1', label:'ESG負責人指定' },
+  ];
+  checks.forEach(({code,label}) => {
+    const v = answers[code] ?? 0;
+    if (v === 0) high.push(label.replace(/^未?/,'尚未'));
+    else if (v === 1) mid.push(label.replace(/^未?尚未?/,'') + '規劃中，尚待落實');
+    else low.push('已建立「' + label.replace(/^尚未|^未/,'') + '」相關機制');
+  });
+  return { high, mid, low };
+}
+
+function buildPriorityMatrix() {
+  const allItems = [...E, ...S, ...G];
+  const immediate = [], plan90 = [], longterm = [];
+  allItems.forEach(([code, text]) => {
+    const v = answers[code] ?? 0;
+    if (v === 0) immediate.push(`${code} ${text}`);
+    else if (v === 1) plan90.push(`${code} ${text}`);
+    else if (v === 2) longterm.push(`${code} ${text}`);
+  });
+  return { immediate, plan90, longterm };
+}
+
+function buildReadiness(scores) {
+  const gri = Math.min(100, Math.round((scores.envPct*0.3 + scores.socPct*0.3 + scores.govPct*0.4)));
+  const ifrsS1 = Math.round(scores.govPct*0.7 + scores.envPct*0.3);
+  const ifrsS2 = Math.round(scores.climatePct*0.6 + scores.envPct*0.4);
+  return { gri, ifrsS1, ifrsS2 };
+}
+
+/* ===================== 報告渲染 ===================== */
+function renderReport() {
+  const scores = computeScores();
+  const risk = buildRiskAnalysis();
+  const matrix = buildPriorityMatrix();
+  const readiness = buildReadiness(scores);
+  const industry = answers['q1'] || '其他';
+  const plan = industryPlans[industry] || industryPlans['其他'];
+
+  const listOrNone = (arr) => arr.length ? `<ul class="list-disc pl-5 space-y-1">${arr.map(i=>`<li>${i}</li>`).join('')}</ul>` : '<p class="text-slate-400">無</p>';
+
+  return `
+  <div id="reportRoot">
+    <h1 class="text-2xl font-bold mb-1 text-center">ESG AI 智能成熟度診斷報告</h1>
+    <p class="text-center text-slate-500 mb-6">產業：${industry}　員工：${answers['q2']||'-'}　年營業額：${answers['q3']||'-'}</p>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6 text-center">
+      <p class="text-slate-500 mb-1">ESG成熟度總分</p>
+      <p class="text-5xl font-bold text-green-600 mb-2">${scores.total}<span class="text-xl text-slate-400">/100</span></p>
+      <p class="text-xl font-semibold">${scores.level.name}</p>
+      <div class="mt-4 grid grid-cols-3 gap-3 text-sm">
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400">環境(E)</p><p class="font-bold text-lg">${scores.eRaw}/30</p></div>
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400">社會(S)</p><p class="font-bold text-lg">${scores.sRaw}/30</p></div>
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400">治理(G)</p><p class="font-bold text-lg">${scores.gScore}/40</p></div>
+      </div>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">ESG雷達圖</h2>
+      <canvas id="radarChart" class="max-h-80"></canvas>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">階段特徵與AI建議</h2>
+      <p class="font-semibold mb-1">特徵</p>
+      ${listOrNone(scores.level.traits)}
+      <p class="font-semibold mt-3 mb-1">AI建議</p>
+      ${listOrNone(scores.level.advice)}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">ESG風險分析</h2>
+      <p class="font-semibold text-red-600 mb-1">高風險</p>
+      ${listOrNone(risk.high)}
+      <p class="font-semibold text-amber-600 mt-3 mb-1">中風險</p>
+      ${listOrNone(risk.mid)}
+      <p class="font-semibold text-green-600 mt-3 mb-1">低風險</p>
+      ${listOrNone(risk.low)}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">ESG優先改善矩陣</h2>
+      <p class="font-semibold mb-1">立即執行（30天）</p>
+      ${listOrNone(matrix.immediate)}
+      <p class="font-semibold mt-3 mb-1">優先規劃（90天）</p>
+      ${listOrNone(matrix.plan90)}
+      <p class="font-semibold mt-3 mb-1">長期推動（12個月）</p>
+      ${listOrNone(matrix.longterm)}
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">專屬12個月ESG行動計畫（${industry}版）</h2>
+      <ol class="list-decimal pl-5 space-y-1">
+        ${plan.map((p,i)=>`<li>第${i+1}個月：${p}</li>`).join('')}
+      </ol>
+    </div>
+
+    <div class="bg-white rounded-xl shadow-sm p-6 mb-6">
+      <h2 class="text-lg font-bold mb-3">永續報告書準備度評估</h2>
+      <div class="grid grid-cols-3 gap-3 text-center mb-4">
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400 text-sm">GRI準備度</p><p class="font-bold text-2xl">${readiness.gri}%</p></div>
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400 text-sm">IFRS S1準備度</p><p class="font-bold text-2xl">${readiness.ifrsS1}%</p></div>
+        <div class="bg-slate-50 rounded-lg p-3"><p class="text-slate-400 text-sm">IFRS S2準備度</p><p class="font-bold text-2xl">${readiness.ifrsS2}%</p></div>
+      </div>
+      <p class="font-semibold mb-1">AI建議下一步</p>
+      <p>${readiness.ifrsS2 < 60 ? '完成氣候風險盤點與碳排放數據蒐集。' : '強化對外資訊揭露並準備第三方確信。'}</p>
+    </div>
+
+    <div class="flex justify-between no-print mb-10">
+      <button id="restartBtn" class="px-5 py-2 rounded-lg border border-slate-300">重新填寫</button>
+      <button id="printBtn" class="px-5 py-2 rounded-lg bg-green-600 text-white">列印 / 匯出PDF</button>
+    </div>
+  </div>
+  `;
+}
+
+function bindReportEvents() {
+  document.getElementById('restartBtn').addEventListener('click', () => {
+    answers = {}; step = 0; render();
+  });
+  document.getElementById('printBtn').addEventListener('click', () => window.print());
+}
+
+let radarChartInstance = null;
+function drawRadar() {
+  const scores = computeScores();
+  const ctx = document.getElementById('radarChart');
+  if (!ctx) return;
+  if (radarChartInstance) radarChartInstance.destroy();
+  radarChartInstance = new Chart(ctx, {
+    type: 'radar',
+    data: {
+      labels: ['環境','社會','治理','氣候風險','供應鏈管理'],
+      datasets: [{
+        label: 'ESG成熟度',
+        data: [scores.envPct, scores.socPct, scores.govPct, scores.climatePct, scores.supplyPct],
+        backgroundColor: 'rgba(22,163,74,0.2)',
+        borderColor: 'rgba(22,163,74,1)',
+        pointBackgroundColor: 'rgba(22,163,74,1)',
+      }]
+    },
+    options: {
+      scales: { r: { min:0, max:100, ticks:{ stepSize:20 } } },
+      plugins: { legend: { display:false } }
+    }
+  });
+}
+
+render();
+</script>
+</body>
+</html>

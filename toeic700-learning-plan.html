@@ -1,0 +1,1159 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>TOEIC 700 · 六個月衝刺計畫</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Noto+Sans+TC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0D0E12;
+  --surface:#16181F;
+  --surface2:#1E2029;
+  --surface3:#252733;
+  --border:rgba(255,255,255,.07);
+  --border2:rgba(255,255,255,.12);
+  --ink:#F0F0F0;
+  --ink2:#9A9BAA;
+  --ink3:#5C5D70;
+  --accent:#6C63FF;
+  --accent2:#A89BFF;
+  --accent-bg:rgba(108,99,255,.12);
+  --green:#2ECC8A;
+  --green-bg:rgba(46,204,138,.1);
+  --amber:#F5A623;
+  --amber-bg:rgba(245,166,35,.1);
+  --red:#FF5C5C;
+  --red-bg:rgba(255,92,92,.1);
+  --blue:#4BA6FF;
+  --blue-bg:rgba(75,166,255,.1);
+  --r:10px;--r-sm:7px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'Outfit',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+}
+.zh{font-family:'Noto Sans TC','Outfit',sans-serif}
+
+/* ===== NAV ===== */
+nav{
+  position:sticky;top:0;z-index:100;
+  background:rgba(13,14,18,.92);
+  backdrop-filter:blur(12px);
+  border-bottom:1px solid var(--border);
+  padding:0 2rem;
+  display:flex;align-items:center;gap:0;
+  height:52px;
+}
+.nav-brand{
+  font-size:14px;font-weight:600;
+  color:var(--ink);
+  margin-right:2rem;
+  white-space:nowrap;
+}
+.nav-brand span{color:var(--accent2)}
+.nav-tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none}
+.nav-tabs::-webkit-scrollbar{display:none}
+.nav-tab{
+  padding:6px 14px;
+  border-radius:6px;
+  font-size:13px;
+  color:var(--ink2);
+  cursor:pointer;
+  white-space:nowrap;
+  border:none;background:transparent;
+  transition:all .15s;
+  font-family:'Outfit',sans-serif;
+}
+.nav-tab:hover{color:var(--ink);background:var(--surface2)}
+.nav-tab.active{color:var(--ink);background:var(--surface3)}
+
+/* ===== MAIN ===== */
+main{max-width:820px;margin:0 auto;padding:2rem 1.5rem 5rem}
+
+/* ===== HERO ===== */
+.hero{
+  background:linear-gradient(135deg,var(--surface2) 0%,var(--surface) 100%);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:2rem;
+  margin-bottom:1.5rem;
+  position:relative;
+  overflow:hidden;
+}
+.hero::before{
+  content:'700';
+  position:absolute;right:-10px;top:-20px;
+  font-size:140px;font-weight:700;
+  color:rgba(108,99,255,.06);
+  line-height:1;pointer-events:none;
+  font-family:'Outfit',sans-serif;
+}
+.hero-title{
+  font-size:26px;font-weight:700;
+  color:var(--ink);
+  margin-bottom:6px;
+}
+.hero-title span{color:var(--accent2)}
+.hero-sub{font-size:14px;color:var(--ink2);line-height:1.6;margin-bottom:1.25rem}
+.stat-row{display:flex;gap:12px;flex-wrap:wrap}
+.stat{
+  padding:10px 16px;
+  background:var(--accent-bg);
+  border:1px solid rgba(108,99,255,.2);
+  border-radius:var(--r-sm);
+}
+.stat .sv{font-size:20px;font-weight:600;color:var(--accent2)}
+.stat .sk{font-size:11px;color:var(--ink2);margin-top:1px}
+
+/* ===== SCORE TRACKER ===== */
+.score-tracker{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1.25rem;
+  margin-bottom:1.5rem;
+}
+.tracker-header{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:1rem;
+}
+.tracker-title{font-size:13px;font-weight:500;color:var(--ink2);text-transform:uppercase;letter-spacing:.08em}
+.tracker-score{font-size:22px;font-weight:600;color:var(--ink)}
+.tracker-score span{font-size:13px;color:var(--ink3);margin-left:4px}
+.month-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}
+.month-bar-wrap{display:flex;flex-direction:column;align-items:center;gap:6px}
+.month-bar-outer{
+  width:100%;height:80px;
+  background:var(--surface2);
+  border-radius:4px;
+  position:relative;
+  overflow:hidden;
+}
+.month-bar-fill{
+  position:absolute;bottom:0;left:0;right:0;
+  border-radius:4px 4px 0 0;
+  transition:height .6s cubic-bezier(.4,0,.2,1);
+}
+.month-bar-fill.done{background:var(--accent)}
+.month-bar-fill.current{background:var(--amber)}
+.month-bar-fill.future{background:var(--surface3)}
+.month-target{
+  position:absolute;left:0;right:0;
+  height:1px;background:rgba(255,255,255,.2);
+}
+.month-label{font-size:10px;color:var(--ink3)}
+.month-score{font-size:11px;font-weight:500;color:var(--ink2)}
+
+/* ===== PHASE CARDS ===== */
+.phase-grid{display:flex;flex-direction:column;gap:10px;margin-bottom:1.5rem}
+.phase-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  overflow:hidden;
+  cursor:pointer;
+  transition:border-color .15s;
+}
+.phase-card:hover{border-color:var(--border2)}
+.phase-card.active-phase{border-color:rgba(108,99,255,.4)}
+.phase-head{
+  display:flex;align-items:center;gap:12px;
+  padding:14px 16px;
+}
+.phase-num{
+  width:32px;height:32px;
+  border-radius:8px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:600;
+  flex-shrink:0;
+}
+.phase-info{flex:1}
+.phase-name{font-size:14px;font-weight:500;color:var(--ink)}
+.phase-range{font-size:12px;color:var(--ink3);margin-top:2px}
+.phase-target{
+  font-size:12px;font-weight:500;
+  padding:4px 10px;
+  border-radius:20px;
+  margin-left:auto;
+}
+.phase-chevron{
+  font-size:16px;color:var(--ink3);
+  transition:transform .2s;
+  margin-left:8px;
+}
+.phase-card.open .phase-chevron{transform:rotate(180deg)}
+.phase-body{
+  display:none;
+  border-top:1px solid var(--border);
+  padding:16px;
+}
+.phase-card.open .phase-body{display:block}
+.topic-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(180px,1fr));
+  gap:8px;
+  margin-bottom:12px;
+}
+.topic-item{
+  padding:10px 12px;
+  background:var(--surface2);
+  border-radius:var(--r-sm);
+  border:1px solid var(--border);
+}
+.topic-item .ti-label{font-size:12px;font-weight:500;color:var(--ink);margin-bottom:3px}
+.topic-item .ti-desc{font-size:11px;color:var(--ink3);line-height:1.4}
+.phase-tip{
+  padding:10px 14px;
+  background:var(--accent-bg);
+  border-radius:var(--r-sm);
+  border-left:3px solid var(--accent);
+  font-size:12px;color:var(--ink2);line-height:1.5;
+  margin-bottom:12px;
+}
+.phase-quiz-btn{
+  display:inline-flex;align-items:center;gap:6px;
+  padding:8px 18px;
+  background:var(--accent);
+  border:none;border-radius:var(--r-sm);
+  color:#fff;font-family:'Outfit',sans-serif;
+  font-size:13px;font-weight:500;cursor:pointer;
+  transition:opacity .15s;
+}
+.phase-quiz-btn:hover{opacity:.85}
+
+/* ===== WEEKLY PLAN ===== */
+.week-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:10px;margin-bottom:1.5rem}
+.week-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:14px 16px;
+}
+.week-head{
+  display:flex;align-items:center;gap:8px;margin-bottom:10px;
+}
+.week-num{
+  width:24px;height:24px;
+  border-radius:6px;
+  background:var(--accent-bg);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;color:var(--accent2);
+  flex-shrink:0;
+}
+.week-title{font-size:13px;font-weight:500;color:var(--ink)}
+.week-days{display:flex;flex-direction:column;gap:5px}
+.day-row{display:flex;align-items:flex-start;gap:8px}
+.day-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:var(--ink3);margin-top:5px;flex-shrink:0;
+}
+.day-text{font-size:11px;color:var(--ink2);line-height:1.5}
+
+/* ===== QUIZ VIEW ===== */
+#v-quiz,#v-result{display:none}
+.quiz-wrap{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:1.5rem;
+}
+.quiz-header{
+  display:flex;align-items:center;gap:10px;margin-bottom:1.25rem;
+}
+.quiz-back{
+  width:30px;height:30px;border-radius:7px;
+  background:var(--surface2);border:none;color:var(--ink2);
+  font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:all .15s;
+}
+.quiz-back:hover{background:var(--surface3);color:var(--ink)}
+.quiz-title{font-size:15px;font-weight:500;color:var(--ink)}
+.quiz-phase-badge{
+  margin-left:auto;font-size:11px;padding:3px 10px;
+  border-radius:20px;font-weight:500;
+}
+.prog-bar{height:3px;background:var(--surface3);border-radius:2px;margin-bottom:1.25rem;overflow:hidden}
+.prog-fill{height:100%;background:var(--accent);border-radius:2px;transition:width .4s ease}
+.q-meta{display:flex;align-items:center;gap:6px;margin-bottom:.75rem}
+.q-badge{
+  font-size:10px;font-weight:600;padding:3px 9px;
+  border-radius:20px;letter-spacing:.04em;
+}
+.q-num-label{font-size:12px;color:var(--ink3);margin-left:auto}
+.question{
+  font-size:16px;line-height:1.7;color:var(--ink);margin-bottom:1.1rem;
+  font-weight:400;
+}
+.blank{
+  display:inline-block;min-width:72px;
+  border-bottom:2px solid var(--accent2);
+  vertical-align:bottom;margin:0 3px;
+}
+.opts{display:flex;flex-direction:column;gap:8px;margin-bottom:1.1rem}
+.opt{
+  display:flex;align-items:flex-start;gap:12px;
+  padding:12px 14px;
+  border:1px solid var(--border);
+  border-radius:var(--r-sm);
+  cursor:pointer;background:var(--surface);
+  transition:all .15s;user-select:none;
+}
+.opt:hover:not(.locked){border-color:var(--border2);background:var(--surface2)}
+.opt.chosen{border-color:var(--accent);background:var(--accent-bg)}
+.opt.correct{border-color:var(--green);background:var(--green-bg)}
+.opt.wrong{border-color:var(--red);background:var(--red-bg)}
+.opt-letter{
+  width:24px;height:24px;border-radius:50%;
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:11px;font-weight:600;flex-shrink:0;
+  color:var(--ink2);transition:all .15s;
+}
+.opt.correct .opt-letter{background:var(--green);border-color:var(--green);color:#fff}
+.opt.wrong .opt-letter{background:var(--red);border-color:var(--red);color:#fff}
+.opt-text{font-size:14px;line-height:1.5;padding-top:2px;color:var(--ink)}
+.expl{
+  padding:12px 14px;
+  background:var(--surface2);
+  border-radius:var(--r-sm);
+  border-left:3px solid var(--accent);
+  font-size:13px;line-height:1.6;color:var(--ink2);
+  margin-bottom:1rem;
+  animation:fadeUp .2s ease;
+}
+.expl strong{color:var(--ink);font-weight:500}
+@keyframes fadeUp{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+.action-row{display:flex;gap:8px;justify-content:flex-end}
+.btn{
+  padding:9px 22px;
+  border:1px solid var(--border2);
+  border-radius:var(--r-sm);
+  background:transparent;cursor:pointer;
+  font-family:'Outfit',sans-serif;font-size:13px;font-weight:500;
+  color:var(--ink);transition:all .15s;
+}
+.btn:hover{background:var(--surface3)}
+.btn:active{transform:scale(.98)}
+.btn-accent{background:var(--accent);border-color:var(--accent);color:#fff}
+.btn-accent:hover{opacity:.85;background:var(--accent)}
+.loading-wrap{text-align:center;padding:3.5rem 1rem}
+.spinner{
+  width:30px;height:30px;
+  border:2px solid var(--border2);
+  border-top-color:var(--accent);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:0 auto 1rem;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:var(--ink2)}
+
+/* ===== RESULT ===== */
+.result-inner{text-align:center;padding:2rem 1rem}
+.result-pct{
+  font-size:68px;font-weight:700;
+  color:var(--ink);line-height:1;
+}
+.result-pct span{font-size:28px;color:var(--ink2)}
+.result-verdict{font-size:15px;color:var(--ink2);margin:.5rem 0 1.25rem}
+.result-grid{
+  display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;
+}
+.result-metric{
+  padding:14px;background:var(--surface2);
+  border-radius:var(--r-sm);border:1px solid var(--border);
+}
+.result-metric .rv{font-size:20px;font-weight:600;color:var(--ink)}
+.result-metric .rk{font-size:11px;color:var(--ink3);margin-top:3px;text-transform:uppercase;letter-spacing:.06em}
+.xp-bar-wrap{margin-bottom:1.5rem}
+.xp-label{display:flex;justify-content:space-between;font-size:12px;color:var(--ink2);margin-bottom:6px}
+.xp-track{height:6px;background:var(--surface3);border-radius:3px;overflow:hidden}
+.xp-fill{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .8s ease}
+.result-actions{display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+
+/* ===== TIPS VIEW ===== */
+.tip-section{margin-bottom:1.75rem}
+.tip-section-title{
+  font-size:12px;text-transform:uppercase;letter-spacing:.1em;
+  color:var(--ink3);margin-bottom:.75rem;font-weight:500;
+}
+.tip-cards{display:flex;flex-direction:column;gap:8px}
+.tip-card{
+  background:var(--surface);border:1px solid var(--border);
+  border-radius:var(--r);padding:14px 16px;
+}
+.tip-card-head{display:flex;align-items:center;gap:10px;margin-bottom:8px}
+.tip-icon{font-size:18px;width:32px;text-align:center}
+.tip-card-title{font-size:14px;font-weight:500;color:var(--ink)}
+.tip-card-body{font-size:13px;color:var(--ink2);line-height:1.6}
+.tip-card-body ul{padding-left:1.2rem;display:flex;flex-direction:column;gap:4px}
+.tip-card-body li{line-height:1.5}
+
+/* ===== UTIL ===== */
+.section-title{
+  font-size:13px;font-weight:500;text-transform:uppercase;
+  letter-spacing:.1em;color:var(--ink3);
+  margin-bottom:1rem;
+}
+.error-note{
+  font-size:13px;color:var(--red);
+  background:var(--red-bg);padding:8px 14px;
+  border-radius:var(--r-sm);border:1px solid rgba(255,92,92,.15);
+  margin-top:8px;
+}
+.view{animation:viewIn .25s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+/* ===== SETTINGS ===== */
+.gear-btn{
+  width:30px;height:30px;
+  border-radius:50%;
+  border:1px solid var(--border2);
+  background:var(--surface2);
+  color:var(--ink2);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+  margin-left:auto;
+  transition:all .15s;
+}
+.gear-btn:hover{background:var(--surface3);color:var(--ink)}
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.55);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;
+  z-index:200;
+}
+.modal-card{
+  width:100%;max-width:420px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--r);
+  padding:1.5rem;
+}
+.modal-title{font-size:17px;font-weight:600;margin-bottom:6px;color:var(--ink)}
+.modal-desc{font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:1rem}
+.modal-desc a{color:var(--accent2)}
+input[type="password"],input[type="text"]{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--border2);
+  border-radius:var(--r-sm);
+  background:var(--surface2);
+  color:var(--ink);
+  font-family:'Outfit',sans-serif;
+  font-size:13px;
+  margin-bottom:12px;
+}
+input[type="password"]:focus,input[type="text"]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* ===== QUESTION BANK ===== */
+.bank-note{
+  font-size:12px;
+  color:var(--ink3);
+  margin:-.5rem 0 1rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.bank-note button{
+  background:none;border:none;
+  color:var(--accent2);
+  font-size:12px;
+  cursor:pointer;
+  text-decoration:underline;
+  font-family:'Outfit',sans-serif;
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-brand">TOEIC <span>700</span></div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('plan')">📋 學習計畫</button>
+    <button class="nav-tab" onclick="showPage('weekly')">📅 週計畫</button>
+    <button class="nav-tab" onclick="showPage('quiz')">✏️ 立即測驗</button>
+    <button class="nav-tab" onclick="showPage('tips')">💡 考試技巧</button>
+  </div>
+  <button class="gear-btn" onclick="openSettings()" title="設定 API Key">⚙</button>
+</nav>
+
+<!-- SETTINGS MODAL -->
+<div id="v-settings" class="modal-overlay" style="display:none">
+  <div class="modal-card">
+    <div class="modal-title">Anthropic API Key</div>
+    <div class="modal-desc">
+      測驗題目由 Claude AI 即時生成，需要你自己的 Anthropic API Key 才能運作。
+      Key 只會存在你瀏覽器的 localStorage，直接從瀏覽器呼叫 Anthropic API，不會經過任何第三方伺服器。
+      還沒有 Key 的話可以到 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> 申請。
+    </div>
+    <input type="password" id="api-key-input" placeholder="sk-ant-...">
+    <div class="modal-actions">
+      <button class="btn" onclick="closeSettings()">取消</button>
+      <button class="btn btn-accent" onclick="saveSettings()">儲存</button>
+    </div>
+  </div>
+</div>
+
+<main>
+
+<!-- ===== PLAN PAGE ===== -->
+<div id="page-plan" class="view">
+
+  <div class="hero">
+    <div class="hero-title">高一起點 → TOEIC <span>700</span> 分</div>
+    <div class="hero-sub zh">從高一英文程度（約 400 分）出發，透過六個月系統化學習，穩步達成 700 分目標。<br>每個月聚焦不同核心能力，搭配 AI 即時測驗追蹤進度。</div>
+    <div class="stat-row">
+      <div class="stat"><div class="sv">6</div><div class="sk">個月計畫</div></div>
+      <div class="stat"><div class="sv">+300</div><div class="sk">目標分差</div></div>
+      <div class="stat"><div class="sv">每日</div><div class="sk">45–60 分鐘</div></div>
+      <div class="stat"><div class="sv">4</div><div class="sk">大核心能力</div></div>
+    </div>
+  </div>
+
+  <!-- Score progression bar -->
+  <div class="score-tracker">
+    <div class="tracker-header">
+      <div class="tracker-title">分數進度預測</div>
+      <div class="tracker-score">目標 <span>700 分</span></div>
+    </div>
+    <div class="month-grid">
+      <div class="month-bar-wrap">
+        <div class="month-bar-outer">
+          <div class="month-target" style="bottom:57%"></div>
+          <div class="month-bar-fill done" style="height:57%"></div>
+        </div>
+        <div class="month-label">第1月</div>
+        <div class="month-score" style="color:var(--green)">~450</div>
+      </div>
+      <div class="month-bar-wrap">
+        <div class="month-bar-outer">
+          <div class="month-target" style="bottom:64%"></div>
+          <div class="month-bar-fill done" style="height:64%"></div>
+        </div>
+        <div class="month-label">第2月</div>
+        <div class="month-score" style="color:var(--green)">~500</div>
+      </div>
+      <div class="month-bar-wrap">
+        <div class="month-bar-outer">
+          <div class="month-target" style="bottom:72%"></div>
+          <div class="month-bar-fill current" style="height:72%"></div>
+        </div>
+        <div class="month-label">第3月</div>
+        <div class="month-score" style="color:var(--amber)">~560</div>
+      </div>
+      <div class="month-bar-wrap">
+        <div class="month-bar-outer">
+          <div class="month-target" style="bottom:80%"></div>
+          <div class="month-bar-fill future" style="height:80%"></div>
+        </div>
+        <div class="month-label">第4月</div>
+        <div class="month-score">~620</div>
+      </div>
+      <div class="month-bar-wrap">
+        <div class="month-bar-outer">
+          <div class="month-target" style="bottom:88%"></div>
+          <div class="month-bar-fill future" style="height:88%"></div>
+        </div>
+        <div class="month-label">第5月</div>
+        <div class="month-score">~660</div>
+      </div>
+      <div class="month-bar-wrap">
+        <div class="month-bar-outer">
+          <div class="month-target" style="bottom:96%"></div>
+          <div class="month-bar-fill future" style="height:96%"></div>
+        </div>
+        <div class="month-label">第6月</div>
+        <div class="month-score" style="color:var(--accent2)">700+</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Phase cards -->
+  <div class="section-title">六個月學習階段</div>
+  <div class="phase-grid" id="phase-grid"></div>
+
+</div>
+
+<!-- ===== WEEKLY PAGE ===== -->
+<div id="page-weekly" style="display:none">
+  <div class="section-title">每週學習節奏（示範：第一月）</div>
+  <div class="week-grid" id="week-grid"></div>
+  <div style="padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);font-size:13px;color:var(--ink2);line-height:1.6;">
+    <strong style="color:var(--ink)">💡 時間分配建議：</strong><br>
+    週一～五：45 分鐘學習 + 15 分鐘複習。週六：完整模擬練習 60–90 分鐘。週日：休息或輕鬆聽英文 Podcast 30 分鐘。<br><br>
+    <strong style="color:var(--ink)">📌 工具推薦：</strong>Anki（單字記憶）、BBC Learning English（聽力）、TOEIC 官方練習題庫。
+  </div>
+</div>
+
+<!-- ===== QUIZ PAGE ===== -->
+<div id="page-quiz">
+  <div id="v-setup-main" class="view">
+    <div class="section-title">選擇階段進行測驗</div>
+    <div class="bank-note" id="bank-note"></div>
+    <div class="phase-grid" id="quiz-phase-select"></div>
+    <div id="quiz-error"></div>
+  </div>
+  <div id="v-loading" style="display:none">
+    <div class="quiz-wrap">
+      <div class="loading-wrap">
+        <div class="spinner"></div>
+        <div class="loading-text">AI 正在依據本階段主題出題⋯⋯</div>
+      </div>
+    </div>
+  </div>
+  <div id="v-quiz" style="display:none"></div>
+  <div id="v-result" style="display:none"></div>
+</div>
+
+<!-- ===== TIPS PAGE ===== -->
+<div id="page-tips" style="display:none">
+  <div class="section-title">TOEIC 700 分攻略</div>
+  <div id="tips-content"></div>
+</div>
+
+</main>
+
+<script>
+/* =========================================================
+   DATA
+   ========================================================= */
+const PHASES = [
+  {
+    num:1, months:'第 1 月', name:'英文基礎重建',
+    target:450, color:'var(--blue)', colorBg:'var(--blue-bg)',
+    emoji:'🏗️',
+    tip:'高一課本單字是最重要的基礎！每天背 15 個單字，搭配例句記憶。先求「看懂」，再求「快速」。',
+    topics:[
+      {label:'高一核心單字',desc:'課本必備 600 字，動詞、名詞為主'},
+      {label:'基礎文法',desc:'時態（現在/過去/未來）、主詞動詞一致'},
+      {label:'短句閱讀',desc:'2–3 行短對話，理解基本語意'},
+      {label:'音標練習',desc:'KK 音標，練習正確發音辨音'},
+    ],
+    quizTypes:['vocab','grammar'],
+    quizDiff:'easy',
+    weeklyFocus:'單字×15 + 文法基礎 + 短文閱讀'
+  },
+  {
+    num:2, months:'第 2 月', name:'職場情境入門',
+    target:500, color:'var(--green)', colorBg:'var(--green-bg)',
+    emoji:'💼',
+    tip:'TOEIC 考試情境以「職場」為主，這個月開始接觸辦公室、電話、會議常用語。把單字連結到實際情境！',
+    topics:[
+      {label:'職場常用詞彙',desc:'office、email、meeting、schedule'},
+      {label:'介係詞＆連接詞',desc:'in/on/at、because、although 用法'},
+      {label:'情境對話',desc:'電話、預約、請假等短對話'},
+      {label:'句子填空',desc:'Part 5 基礎句子填空練習'},
+    ],
+    quizTypes:['vocab','grammar','listening'],
+    quizDiff:'easy',
+    weeklyFocus:'職場單字 + 情境聽力 + Part 5 練習'
+  },
+  {
+    num:3, months:'第 3 月', name:'聽力能力提升',
+    target:560, color:'var(--amber)', colorBg:'var(--amber-bg)',
+    emoji:'🎧',
+    tip:'聽力佔 TOEIC 總分一半（495分）！每天聽 20 分鐘英文對話，先求「關鍵字捕捉」，不必每字都懂。',
+    topics:[
+      {label:'Part 1 照片描述',desc:'看圖選答，掌握場景描述用語'},
+      {label:'Part 2 應答問題',desc:'短問答，注意 WH 問句回應'},
+      {label:'Part 3/4 長對話',desc:'主旨、細節題訓練，練習預看題目'},
+      {label:'常見發音變化',desc:'連音、弱化、縮讀辨別'},
+    ],
+    quizTypes:['listening','vocab'],
+    quizDiff:'mixed',
+    weeklyFocus:'每日聽力 20 分鐘 + Part 1-4 模擬 + 單字複習'
+  },
+  {
+    num:4, months:'第 4 月', name:'閱讀速度訓練',
+    target:620, color:'var(--accent)', colorBg:'var(--accent-bg)',
+    emoji:'📖',
+    tip:'閱讀測驗時間壓力大！練習「略讀」找主旨、「掃讀」找細節，不要逐字翻譯。目標 1 分鐘讀完一段。',
+    topics:[
+      {label:'Part 5 詞性判斷',desc:'名詞/動詞/形容詞/副詞位置判斷'},
+      {label:'Part 6 段落填空',desc:'上下文邏輯與語意連貫'},
+      {label:'Part 7 單篇閱讀',desc:'email、廣告、通知類短文'},
+      {label:'速讀技巧',desc:'主題句定位、關鍵字掃描'},
+    ],
+    quizTypes:['reading','grammar'],
+    quizDiff:'mixed',
+    weeklyFocus:'Part 5×10題 + Part 7 閱讀 + 速讀練習'
+  },
+  {
+    num:5, months:'第 5 月', name:'模擬衝刺',
+    target:660, color:'var(--red)', colorBg:'var(--red-bg)',
+    emoji:'🚀',
+    tip:'開始計時做整套模擬題！聽力 45 分鐘、閱讀 75 分鐘，嚴格遵守時間。錯題一定要分析原因。',
+    topics:[
+      {label:'全套模擬測驗',desc:'每週一次完整 200 題練習'},
+      {label:'錯題分析',desc:'整理常錯題型，針對弱點補強'},
+      {label:'雙篇閱讀',desc:'Part 7 雙篇文章交叉參照'},
+      {label:'字彙衝刺',desc:'高頻商業字彙 300 字複習'},
+    ],
+    quizTypes:['reading','vocab','listening'],
+    quizDiff:'hard',
+    weeklyFocus:'模擬全題 + 錯題複習 + 商業字彙強化'
+  },
+  {
+    num:6, months:'第 6 月', name:'衝刺與穩定',
+    target:700, color:'var(--accent2)', colorBg:'rgba(168,155,255,.12)',
+    emoji:'🏆',
+    tip:'最後一個月維持手感，不要過度疲勞！每天 30 分鐘練習即可，重點放在最弱的題型。保持正向心態！',
+    topics:[
+      {label:'弱點集中攻克',desc:'針對失分最多的題型密集練習'},
+      {label:'正式模擬×3次',desc:'模擬考場環境計時作答'},
+      {label:'Part 5/6 快攻',desc:'30 秒內完成一題的速度目標'},
+      {label:'考試心理準備',desc:'時間管理策略、答題順序規劃'},
+    ],
+    quizTypes:['reading','grammar','vocab'],
+    quizDiff:'hard',
+    weeklyFocus:'模擬測驗 + 弱點強化 + 考試策略確認'
+  }
+];
+
+const WEEKLY_PLAN = [
+  {week:1,title:'單字奠基週',days:['週一：高一必備動詞 50 個，Anki 建牌','週二：現在式/過去式複習，練習 10 句','週三：短對話閱讀（3篇）+ 生字記錄','週四：單字複習 + 音標練習 20 分鐘','週五：本週單字測驗（自測）','週六：做 TOEIC Part 5 基礎 20 題','週日：聽 BBC 英文 Podcast 30 分鐘']},
+  {week:2,title:'文法打底週',days:['週一：名詞/代名詞用法 + 例句 10 個','週二：進行式/完成式練習題 15 題','週三：短文閱讀（主旨找尋練習）','週四：介係詞 in/on/at 搭配練習','週五：文法混合測驗 20 題','週六：Part 5 文法題 30 題（計時）','週日：英文影集 10 分鐘（加字幕）']},
+  {week:3,title:'閱讀入門週',days:['週一：名詞片語/形容詞子句練習','週二：閱讀短文 2 篇（200字），回答主旨','週三：同義字/反義字 30 組','週四：Part 6 段落填空練習 1 組','週五：綜合複習 + 本週錯題整理','週六：模擬聽力 Part 1-2（30題）','週日：重複背誦本週生字']},
+  {week:4,title:'第一月驗收',days:['週一：單字全面複習（本月）','週二：文法總整理，整理筆記','週三：模擬 Part 5 × 30 題（計時）','週四：閱讀速度練習（2分鐘/篇）','週五：月底自測：模擬 100 題','週六：對答案 + 分析錯題類型','週日：規劃下個月學習重點']}
+];
+
+const TIPS_DATA = [
+  {
+    section:'分數結構了解',
+    items:[
+      {icon:'📊',title:'TOEIC 滿分 990 分',body:'聽力（Listening）495 分 + 閱讀（Reading）495 分。700 分目標：聽力約 350 分 + 閱讀約 350 分。'},
+      {icon:'🎯',title:'Part 5 是最快得分點',body:'Part 5（40題）是詞彙和文法選擇題，每題目標 20–30 秒，準確率高的話可以快速積累分數。<ul><li>先判斷詞性（空格前後看）</li><li>再判斷時態</li><li>最後看語意</li></ul>'},
+    ]
+  },
+  {
+    section:'聽力攻略',
+    items:[
+      {icon:'🎧',title:'預讀題目是關鍵',body:'在每段播放前，利用空白時間快速預讀選項，掌握題目問什麼。<ul><li>Part 3/4 先看題目，預測對話內容</li><li>注意「WHY / WHAT / WHERE / WHEN」關鍵詞</li><li>不懂的題馬上跳過，不要影響下一題</li></ul>'},
+      {icon:'🔊',title:'常見陷阱',body:'TOEIC 聽力常用「聲音相近但語意不同」的干擾選項。例如：hear/here、write/right。要特別注意上下文邏輯。'},
+    ]
+  },
+  {
+    section:'閱讀攻略',
+    items:[
+      {icon:'⏱️',title:'時間管理策略',body:'閱讀共 75 分鐘 100 題，建議分配：<ul><li>Part 5（40題）：20分鐘（30秒/題）</li><li>Part 6（16題）：10分鐘</li><li>Part 7（54題）：45分鐘</li></ul>若來不及，Part 7 最後幾題可以猜同一個選項。'},
+      {icon:'📌',title:'Part 7 閱讀技巧',body:'不需要從頭讀完整篇文章。<ul><li>先看題目，找關鍵字</li><li>回文章「定位」關鍵字附近的段落</li><li>email 類：主旨在第一段、要求在最後一段</li><li>廣告類：找「限制條件」和「聯絡方式」</li></ul>'},
+    ]
+  },
+  {
+    section:'單字記憶法',
+    items:[
+      {icon:'🧠',title:'情境記憶法',body:'把單字放進 TOEIC 常見場景記憶，效果遠勝死背。例如：schedule（行程表）→「我需要重新安排 schedule」。建議使用 Anki 間隔重複系統，每天 15-20 個新字。'},
+      {icon:'📝',title:'高頻字彙主題',body:'重點記憶這些主題單字：<ul><li>辦公室：deadline、agenda、memo、invoice</li><li>旅行：itinerary、reservation、departure</li><li>人事：promotion、resignation、recruit</li><li>財務：budget、expenditure、revenue</li></ul>'},
+    ]
+  }
+];
+
+/* =========================================================
+   RENDER PLAN
+   ========================================================= */
+function renderPlan(){
+  const grid=document.getElementById('phase-grid');
+  grid.innerHTML=PHASES.map(p=>`
+    <div class="phase-card" id="phase-${p.num}" onclick="togglePhase(${p.num})">
+      <div class="phase-head">
+        <div class="phase-num" style="background:${p.colorBg};color:${p.color}">${p.emoji}</div>
+        <div class="phase-info">
+          <div class="phase-name zh">${p.months}｜${p.name}</div>
+          <div class="phase-range">主要題型：${p.quizTypes.join('、')}</div>
+        </div>
+        <div class="phase-target" style="background:${p.colorBg};color:${p.color}">目標 ${p.target} 分</div>
+        <div class="phase-chevron">▾</div>
+      </div>
+      <div class="phase-body">
+        <div class="phase-tip zh">💡 ${p.tip}</div>
+        <div class="topic-grid">
+          ${p.topics.map(t=>`
+            <div class="topic-item">
+              <div class="ti-label zh">${t.label}</div>
+              <div class="ti-desc zh">${t.desc}</div>
+            </div>`).join('')}
+        </div>
+        <button class="phase-quiz-btn" onclick="startPhaseQuiz(${p.num},event)">
+          ✏️ 開始本階段測驗
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+function togglePhase(num){
+  const el=document.getElementById('phase-'+num);
+  el.classList.toggle('open');
+}
+
+/* =========================================================
+   RENDER WEEKLY
+   ========================================================= */
+function renderWeekly(){
+  document.getElementById('week-grid').innerHTML=WEEKLY_PLAN.map(w=>`
+    <div class="week-card">
+      <div class="week-head">
+        <div class="week-num">W${w.week}</div>
+        <div class="week-title zh">${w.title}</div>
+      </div>
+      <div class="week-days">
+        ${w.days.map(d=>`<div class="day-row"><div class="day-dot"></div><div class="day-text zh">${d}</div></div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   RENDER QUIZ SELECT
+   ========================================================= */
+function renderQuizSelect(){
+  document.getElementById('quiz-phase-select').innerHTML=PHASES.map(p=>`
+    <div class="phase-card">
+      <div class="phase-head">
+        <div class="phase-num" style="background:${p.colorBg};color:${p.color}">${p.emoji}</div>
+        <div class="phase-info">
+          <div class="phase-name zh">${p.months}｜${p.name}</div>
+          <div class="phase-range">難度：${{easy:'基礎',mixed:'混合',hard:'進階'}[p.quizDiff]}</div>
+        </div>
+        <button class="phase-quiz-btn" onclick="startPhaseQuiz(${p.num},event)">
+          開始 →
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   RENDER TIPS
+   ========================================================= */
+function renderTips(){
+  document.getElementById('tips-content').innerHTML=TIPS_DATA.map(s=>`
+    <div class="tip-section">
+      <div class="tip-section-title">${s.section}</div>
+      <div class="tip-cards">
+        ${s.items.map(i=>`
+          <div class="tip-card">
+            <div class="tip-card-head">
+              <div class="tip-icon">${i.icon}</div>
+              <div class="tip-card-title zh">${i.title}</div>
+            </div>
+            <div class="tip-card-body zh">${i.body}</div>
+          </div>`).join('')}
+      </div>
+    </div>`).join('');
+}
+
+/* =========================================================
+   PAGE NAV
+   ========================================================= */
+const PAGES=['plan','weekly','quiz','tips'];
+function showPage(id){
+  PAGES.forEach(p=>{
+    const el=document.getElementById('page-'+p);
+    if(el) el.style.display=p===id?'block':'none';
+  });
+  document.querySelectorAll('.nav-tab').forEach((t,i)=>{
+    t.classList.toggle('active',PAGES[i]===id);
+  });
+  if(id==='quiz'){
+    showQuizView('v-setup-main');
+    renderBankNote();
+  }
+}
+
+/* =========================================================
+   QUIZ ENGINE
+   ========================================================= */
+let Q={phase:null,questions:[],current:0,answers:[],answered:false,sel:null};
+
+const API_KEY_STORAGE='anthropic_api_key';
+function getApiKey(){return localStorage.getItem(API_KEY_STORAGE)||'';}
+function openSettings(){
+  document.getElementById('api-key-input').value=getApiKey();
+  document.getElementById('v-settings').style.display='flex';
+}
+function closeSettings(){document.getElementById('v-settings').style.display='none';}
+function saveSettings(){
+  const key=document.getElementById('api-key-input').value.trim();
+  if(key) localStorage.setItem(API_KEY_STORAGE,key);
+  else localStorage.removeItem(API_KEY_STORAGE);
+  closeSettings();
+}
+
+function showQuizView(id){
+  ['v-setup-main','v-loading','v-quiz','v-result'].forEach(v=>{
+    const el=document.getElementById(v);
+    if(el) el.style.display=v===id?'block':'none';
+  });
+}
+
+/* ---- 自建題庫（累積 AI 出過的題目，依階段分類，之後優先從這裡抽題） ---- */
+const BANK_STORAGE='toeic700_question_bank';
+const BANK_MAX=800;
+const QUIZ_COUNT=10;
+
+function loadBank(){
+  try{ return JSON.parse(localStorage.getItem(BANK_STORAGE))||[]; }
+  catch(e){ return []; }
+}
+
+function questionKey(phaseNum,q){
+  return `${phaseNum}|${q.type}|${(q.question||'').trim()}`;
+}
+
+function addToBank(phaseNum,newQuestions){
+  const bank=loadBank();
+  const seen=new Set(bank.map(q=>questionKey(q.phase,q)));
+  newQuestions.forEach(q=>{
+    const entry={...q,phase:phaseNum};
+    const key=questionKey(phaseNum,q);
+    if(!seen.has(key)){
+      bank.push(entry);
+      seen.add(key);
+    }
+  });
+  const trimmed=bank.length>BANK_MAX?bank.slice(bank.length-BANK_MAX):bank;
+  localStorage.setItem(BANK_STORAGE,JSON.stringify(trimmed));
+}
+
+function clearBank(){
+  localStorage.removeItem(BANK_STORAGE);
+  renderBankNote();
+}
+
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function pickFromBank(phaseNum,count){
+  const bank=loadBank().filter(q=>q.phase===phaseNum);
+  return shuffle(bank).slice(0,count);
+}
+
+function renderBankNote(){
+  const el=document.getElementById('bank-note');
+  if(!el) return;
+  const bank=loadBank();
+  if(!bank.length){
+    el.innerHTML='題庫目前是空的，出過的題目會自動存下來，之後優先從題庫抽題（不用每次都呼叫 AI）。';
+    return;
+  }
+  el.innerHTML=`題庫已累積 ${bank.length} 題　<button onclick="clearBank()">清空題庫</button>`;
+}
+
+async function startPhaseQuiz(num, e){
+  e&&e.stopPropagation();
+  const p=PHASES.find(x=>x.num===num);
+  Q.phase=p;Q.questions=[];Q.current=0;Q.answers=[];Q.answered=false;Q.sel=null;
+  showPage('quiz');
+
+  const bankPicks=pickFromBank(num,QUIZ_COUNT);
+  const remaining=QUIZ_COUNT-bankPicks.length;
+
+  if(remaining<=0){
+    Q.questions=shuffle(bankPicks);
+    showQuizView('v-quiz');
+    renderQ();
+    return;
+  }
+
+  if(!getApiKey()){
+    if(bankPicks.length){
+      document.getElementById('quiz-error').innerHTML=`<div class="error-note">題庫只有 ${bankPicks.length} 題符合本階段，還需要 ${remaining} 題才夠，請設定 API Key 讓 AI 補題。</div>`;
+    }
+    openSettings();
+    return;
+  }
+
+  showQuizView('v-loading');
+
+  const typeMap={vocab:'詞彙填空',grammar:'文法選擇',reading:'閱讀理解',listening:'情境對話',reorder:'句子排序'};
+  const diffMap={easy:'基礎（高一程度）',mixed:'基礎到中級混合',hard:'中高級進階'};
+  const types=p.quizTypes.map(t=>typeMap[t]||t).join('、');
+
+  const prompt=`你是 TOEIC 英文考試專業出題老師。請依照以下條件出 ${remaining} 道 TOEIC 練習題：
+
+學習階段：第 ${p.num} 月「${p.name}」
+本階段主題：${p.topics.map(t=>t.label).join('、')}
+題目類型：${types}
+難度：${diffMap[p.quizDiff]}
+考生程度：${p.num<=2?'高一程度，請用基礎英文':p.num<=4?'已有基礎，中等難度':' TOEIC 700 分挑戰者，高難度'}
+
+嚴格只回傳 JSON，不含任何說明或 markdown：
+{"questions":[{"type":"vocab","typeLabel":"詞彙","difficulty":"easy","question":"題目（空格用___）","options":["A. xxx","B. xxx","C. xxx","D. xxx"],"answer":0,"explanation":"中文解析（說明為什麼正確、其他選項為何不對）"}]}
+
+answer 為 0-3 的正確選項索引。explanation 請用中文，1-2句。`;
+
+  try{
+    const apiKey=getApiKey();
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-5',
+        max_tokens:4000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    if(!res.ok){
+      const errBody=await res.json().catch(()=>({}));
+      throw new Error(errBody?.error?.message||`API 錯誤（HTTP ${res.status}）`);
+    }
+    const data=await res.json();
+    const text=data.content.map(c=>c.type==='text'?c.text:'').join('');
+    const clean=text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    addToBank(num,parsed.questions);
+    Q.questions=shuffle([...bankPicks,...parsed.questions]);
+    showQuizView('v-quiz');
+    renderQ();
+  }catch(err){
+    showQuizView('v-setup-main');
+    document.getElementById('quiz-error').innerHTML=`<div class="error-note">出題失敗，請重試（${err.message}）</div>`;
+  }
+}
+
+function renderQ(){
+  const q=Q.questions[Q.current];
+  const total=Q.questions.length;
+  const pct=Math.round(Q.current/total*100);
+  const letters=['A','B','C','D'];
+  const p=Q.phase;
+  const qText=q.question.replace(/___/g,'<span class="blank"></span>');
+
+  document.getElementById('v-quiz').innerHTML=`
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <button class="quiz-back" onclick="showQuizView('v-setup-main')">←</button>
+        <div class="quiz-title zh">${p.emoji} ${p.months}｜${p.name}</div>
+        <div class="quiz-phase-badge" style="background:${p.colorBg};color:${p.color}">目標 ${p.target} 分</div>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%"></div></div>
+      <div class="q-meta">
+        <span class="q-badge" style="background:${p.colorBg};color:${p.color}">${q.typeLabel}</span>
+        <span class="q-num-label">${Q.current+1} / ${total}</span>
+      </div>
+      <div class="question">${qText}</div>
+      <div class="opts" id="opts">
+        ${q.options.map((o,i)=>`
+          <div class="opt" id="opt-${i}" onclick="pick(${i})">
+            <div class="opt-letter">${letters[i]}</div>
+            <div class="opt-text">${o.replace(/^[A-D]\.\s*/,'')}</div>
+          </div>`).join('')}
+      </div>
+      <div id="expl"></div>
+      <div class="action-row">
+        <button class="btn" id="btn-check" onclick="checkA()" style="display:none">確認答案</button>
+        <button class="btn btn-accent" id="btn-next" onclick="nextQ()" style="display:none">
+          ${Q.current+1<total?'下一題 →':'查看結果'}
+        </button>
+      </div>
+    </div>`;
+  Q.answered=false;Q.sel=null;
+}
+
+function pick(i){
+  if(Q.answered) return;
+  Q.sel=i;
+  document.querySelectorAll('.opt').forEach((o,idx)=>o.classList.toggle('chosen',idx===i));
+  document.getElementById('btn-check').style.display='block';
+}
+
+function checkA(){
+  if(Q.sel===null||Q.answered) return;
+  const q=Q.questions[Q.current];
+  Q.answered=true;Q.answers.push(Q.sel);
+  const correct=q.answer;
+  document.querySelectorAll('.opt').forEach((o,i)=>{
+    o.classList.remove('chosen');o.classList.add('locked');
+    if(i===correct) o.classList.add('correct');
+    else if(i===Q.sel&&Q.sel!==correct) o.classList.add('wrong');
+  });
+  const ok=Q.sel===correct;
+  document.getElementById('expl').innerHTML=`<div class="expl">
+    <strong>${ok?'✓ 答對了！':'✗ 答錯了。'}</strong>&ensp;${q.explanation}
+  </div>`;
+  document.getElementById('btn-check').style.display='none';
+  document.getElementById('btn-next').style.display='block';
+}
+
+function nextQ(){
+  if(!Q.answered) return;
+  Q.current++;
+  if(Q.current>=Q.questions.length) showResult();
+  else renderQ();
+}
+
+function showResult(){
+  const total=Q.questions.length;
+  const correct=Q.answers.filter((a,i)=>a===Q.questions[i].answer).length;
+  const pct=Math.round(correct/total*100);
+  const verdict=pct>=80?'優秀！繼續保持 🎉':pct>=60?'不錯！再加油 👍':'需要加強，多練幾次 💪';
+  const p=Q.phase;
+  const xpEarned=Math.round(pct*2);
+
+  showQuizView('v-result');
+  document.getElementById('v-result').innerHTML=`
+    <div class="quiz-wrap">
+      <div class="quiz-header">
+        <button class="quiz-back" onclick="showQuizView('v-setup-main')">←</button>
+        <div class="quiz-title">測驗結果</div>
+      </div>
+      <div class="result-inner">
+        <div class="result-pct">${pct}<span>%</span></div>
+        <div class="result-verdict zh">${correct} / ${total} 題正確 · ${verdict}</div>
+        <div class="result-grid">
+          <div class="result-metric">
+            <div class="rv">${correct}</div><div class="rk">答對</div>
+          </div>
+          <div class="result-metric">
+            <div class="rv">${total-correct}</div><div class="rk">答錯</div>
+          </div>
+          <div class="result-metric">
+            <div class="rv" style="color:${p.color}">~${p.target}</div><div class="rk">本月目標</div>
+          </div>
+        </div>
+        <div class="xp-bar-wrap">
+          <div class="xp-label"><span>本次練習貢獻</span><span>+${xpEarned} XP</span></div>
+          <div class="xp-track"><div class="xp-fill" style="width:${Math.min(100,xpEarned/2)}%"></div></div>
+        </div>
+        <div class="result-actions">
+          <button class="btn" onclick="restartSame()">再練一次</button>
+          <button class="btn btn-accent" onclick="showQuizView('v-setup-main')">選其他階段</button>
+        </div>
+      </div>
+    </div>`;
+}
+
+function restartSame(){
+  const p=Q.phase;
+  startPhaseQuiz(p.num,null);
+}
+
+/* =========================================================
+   INIT
+   ========================================================= */
+renderPlan();
+renderWeekly();
+renderQuizSelect();
+renderTips();
+renderBankNote();
+</script>
+</body>
+</html>

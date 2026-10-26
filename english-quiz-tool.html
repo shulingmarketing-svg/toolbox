@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>英文測驗練習 — TOEIC & PTE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F5F2ED;
+  --surface: #FDFBF8;
+  --surface2: #EDEAE4;
+  --ink: #1A1814;
+  --ink2: #5C574F;
+  --ink3: #9C9790;
+  --accent: #C4552A;
+  --accent-bg: #FAF0EC;
+  --toeic: #2A5BC4;
+  --toeic-bg: #ECF0FA;
+  --pte: #5C2AC4;
+  --pte-bg: #F0ECFA;
+  --success: #1D7A4E;
+  --success-bg: #EAF5EF;
+  --danger: #B82020;
+  --danger-bg: #FAF0F0;
+  --border: rgba(26,24,20,0.1);
+  --border2: rgba(26,24,20,0.18);
+  --radius: 12px;
+  --radius-sm: 8px;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);
+  color:var(--ink);
+  min-height:100vh;
+  display:flex;
+  align-items:flex-start;
+  justify-content:center;
+  padding:2rem 1rem 4rem;
+}
+.shell{
+  width:100%;
+  max-width:680px;
+}
+/* ---- masthead ---- */
+.masthead{
+  display:flex;
+  align-items:flex-end;
+  justify-content:space-between;
+  margin-bottom:2.5rem;
+  padding-bottom:1.25rem;
+  border-bottom:1px solid var(--border2);
+}
+.masthead-title{
+  font-family:'DM Serif Display',serif;
+  font-size:28px;
+  color:var(--ink);
+  line-height:1.1;
+}
+.masthead-sub{
+  font-size:12px;
+  color:var(--ink3);
+  letter-spacing:.08em;
+  text-transform:uppercase;
+  margin-top:4px;
+}
+.masthead-badge{
+  display:flex;
+  gap:6px;
+}
+.exam-pill{
+  font-size:11px;
+  font-weight:500;
+  padding:4px 12px;
+  border-radius:20px;
+}
+.pill-toeic{background:var(--toeic-bg);color:var(--toeic)}
+.pill-pte{background:var(--pte-bg);color:var(--pte)}
+
+/* ---- setup ---- */
+.section-label{
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.1em;
+  color:var(--ink3);
+  margin-bottom:.6rem;
+  font-weight:500;
+}
+.tab-row{
+  display:flex;
+  gap:6px;
+  margin-bottom:1.75rem;
+  flex-wrap:wrap;
+}
+.tab{
+  padding:7px 18px;
+  border:1px solid var(--border2);
+  border-radius:20px;
+  background:transparent;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  color:var(--ink2);
+  transition:all .15s;
+}
+.tab:hover{background:var(--surface2);color:var(--ink)}
+.tab.active{
+  background:var(--ink);
+  color:var(--bg);
+  border-color:var(--ink);
+}
+
+.type-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(140px,1fr));
+  gap:8px;
+  margin-bottom:1.75rem;
+}
+.type-card{
+  padding:14px 16px;
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  cursor:pointer;
+  background:var(--surface);
+  transition:all .15s;
+  user-select:none;
+}
+.type-card:hover{border-color:var(--border2);background:var(--surface)}
+.type-card.sel{
+  border-color:var(--accent);
+  background:var(--accent-bg);
+}
+.type-card .tc-icon{
+  width:28px;height:28px;
+  background:var(--surface2);
+  border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  margin-bottom:10px;
+  font-size:14px;
+  transition:background .15s;
+}
+.type-card.sel .tc-icon{background:var(--accent);color:#fff}
+.type-card .tc-label{font-size:13px;font-weight:500;color:var(--ink)}
+.type-card .tc-sub{font-size:11px;color:var(--ink3);margin-top:3px}
+
+.controls-row{
+  display:flex;
+  gap:16px;
+  margin-bottom:2rem;
+  flex-wrap:wrap;
+}
+.ctrl-group label{
+  display:block;
+  font-size:11px;
+  text-transform:uppercase;
+  letter-spacing:.08em;
+  color:var(--ink3);
+  margin-bottom:6px;
+  font-weight:500;
+}
+select{
+  padding:8px 32px 8px 12px;
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  background:var(--surface);
+  color:var(--ink);
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  cursor:pointer;
+  appearance:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%239C9790' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 10px center;
+}
+select:focus{outline:2px solid var(--accent);outline-offset:2px}
+
+.btn{
+  padding:10px 24px;
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  background:transparent;
+  cursor:pointer;
+  font-family:'DM Sans',sans-serif;
+  font-size:14px;
+  font-weight:500;
+  color:var(--ink);
+  transition:all .15s;
+}
+.btn:hover{background:var(--surface2)}
+.btn:active{transform:scale(.98)}
+.btn-primary{
+  background:var(--ink);
+  color:var(--bg);
+  border-color:var(--ink);
+}
+.btn-primary:hover{background:#333;border-color:#333}
+
+.error-note{
+  font-size:13px;
+  color:var(--danger);
+  background:var(--danger-bg);
+  padding:8px 14px;
+  border-radius:var(--radius-sm);
+  margin-bottom:12px;
+  border:1px solid rgba(184,32,32,.12);
+}
+
+/* ---- quiz ---- */
+.progress-wrap{
+  margin-bottom:1.5rem;
+}
+.prog-meta{
+  display:flex;
+  justify-content:space-between;
+  font-size:12px;
+  color:var(--ink3);
+  margin-bottom:6px;
+}
+.prog-track{
+  height:3px;
+  background:var(--surface2);
+  border-radius:2px;
+  overflow:hidden;
+}
+.prog-fill{
+  height:100%;
+  background:var(--ink);
+  border-radius:2px;
+  transition:width .4s cubic-bezier(.4,0,.2,1);
+}
+
+.q-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:1.5rem;
+  margin-bottom:1rem;
+}
+.q-tags{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-bottom:1rem;
+}
+.q-badge{
+  font-size:10px;
+  font-weight:500;
+  padding:3px 9px;
+  border-radius:20px;
+  letter-spacing:.04em;
+}
+.q-badge.toeic{background:var(--toeic-bg);color:var(--toeic)}
+.q-badge.pte{background:var(--pte-bg);color:var(--pte)}
+.q-badge.type{background:var(--surface2);color:var(--ink2)}
+.q-diff{
+  margin-left:auto;
+  font-size:10px;
+  color:var(--ink3);
+}
+
+.question{
+  font-family:'DM Serif Display',serif;
+  font-size:17px;
+  line-height:1.65;
+  color:var(--ink);
+  margin-bottom:1.25rem;
+}
+.blank{
+  display:inline-block;
+  min-width:70px;
+  border-bottom:2px solid var(--ink);
+  vertical-align:bottom;
+  margin:0 3px;
+}
+
+.options{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+.opt{
+  display:flex;
+  align-items:flex-start;
+  gap:12px;
+  padding:11px 14px;
+  border:1px solid var(--border);
+  border-radius:var(--radius-sm);
+  cursor:pointer;
+  background:var(--surface);
+  transition:all .15s;
+  user-select:none;
+}
+.opt:hover:not(.locked){
+  border-color:var(--border2);
+  background:var(--surface2);
+}
+.opt.chosen{border-color:var(--ink);background:var(--surface2)}
+.opt.correct{border-color:var(--success);background:var(--success-bg)}
+.opt.wrong{border-color:var(--danger);background:var(--danger-bg)}
+.opt-letter{
+  width:24px;height:24px;
+  border-radius:50%;
+  border:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:12px;
+  font-weight:500;
+  flex-shrink:0;
+  color:var(--ink2);
+  transition:all .15s;
+}
+.opt.correct .opt-letter{background:var(--success);border-color:var(--success);color:#fff}
+.opt.wrong .opt-letter{background:var(--danger);border-color:var(--danger);color:#fff}
+.opt-text{font-size:14px;line-height:1.5;padding-top:2px;color:var(--ink)}
+
+.explanation{
+  margin-top:1rem;
+  padding:12px 16px;
+  background:var(--surface2);
+  border-radius:var(--radius-sm);
+  border-left:3px solid var(--border2);
+  font-size:13px;
+  line-height:1.6;
+  color:var(--ink2);
+  animation:fadeIn .2s ease;
+}
+.explanation strong{color:var(--ink);font-weight:500}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+.action-row{
+  display:flex;
+  gap:8px;
+  justify-content:flex-end;
+  margin-top:1rem;
+}
+
+/* ---- loading ---- */
+.loading-wrap{
+  text-align:center;
+  padding:4rem 1rem;
+  color:var(--ink3);
+}
+.spinner{
+  width:32px;height:32px;
+  border:2px solid var(--border2);
+  border-top-color:var(--ink);
+  border-radius:50%;
+  animation:spin 1s linear infinite;
+  margin:0 auto 1rem;
+}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-text{font-size:14px}
+
+/* ---- result ---- */
+.result-card{
+  background:var(--surface);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:2.5rem 1.5rem;
+  text-align:center;
+}
+.result-score-wrap{
+  margin-bottom:1.5rem;
+}
+.result-pct{
+  font-family:'DM Serif Display',serif;
+  font-size:72px;
+  line-height:1;
+  color:var(--ink);
+}
+.result-pct span{font-size:32px;color:var(--ink2)}
+.result-verdict{
+  font-size:15px;
+  color:var(--ink2);
+  margin-top:.5rem;
+}
+.result-grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:10px;
+  margin-bottom:1.75rem;
+}
+.result-metric{
+  padding:14px;
+  background:var(--bg);
+  border-radius:var(--radius-sm);
+  border:1px solid var(--border);
+}
+.result-metric .rv{
+  font-family:'DM Serif Display',serif;
+  font-size:22px;
+  color:var(--ink);
+}
+.result-metric .rk{
+  font-size:11px;
+  color:var(--ink3);
+  margin-top:3px;
+  text-transform:uppercase;
+  letter-spacing:.06em;
+}
+.result-actions{
+  display:flex;
+  gap:8px;
+  justify-content:center;
+  flex-wrap:wrap;
+}
+
+/* ---- view transitions ---- */
+.view{animation:viewIn .25s ease}
+@keyframes viewIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ---- settings ---- */
+.gear-btn{
+  width:32px;height:32px;
+  border-radius:50%;
+  border:1px solid var(--border2);
+  background:var(--surface);
+  color:var(--ink2);
+  cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;
+  margin-left:10px;
+  transition:all .15s;
+}
+.gear-btn:hover{background:var(--surface2);color:var(--ink)}
+.modal-overlay{
+  position:fixed;inset:0;
+  background:rgba(26,24,20,.45);
+  display:flex;align-items:center;justify-content:center;
+  padding:1rem;
+  z-index:200;
+}
+.modal-card{
+  width:100%;max-width:420px;
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:var(--radius);
+  padding:1.5rem;
+}
+.modal-title{font-family:'DM Serif Display',serif;font-size:19px;margin-bottom:6px}
+.modal-desc{font-size:12px;color:var(--ink2);line-height:1.6;margin-bottom:1rem}
+.modal-desc a{color:var(--accent)}
+input[type="password"],input[type="text"]{
+  width:100%;
+  padding:10px 12px;
+  border:1px solid var(--border2);
+  border-radius:var(--radius-sm);
+  background:var(--bg);
+  color:var(--ink);
+  font-family:'DM Sans',sans-serif;
+  font-size:13px;
+  margin-bottom:12px;
+}
+input[type="password"]:focus,input[type="text"]:focus{outline:2px solid var(--accent);outline-offset:1px}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end}
+
+/* ---- question bank ---- */
+.bank-note{
+  font-size:12px;
+  color:var(--ink3);
+  margin:-.75rem 0 1.5rem;
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+.bank-note button{
+  background:none;border:none;
+  color:var(--accent);
+  font-size:12px;
+  cursor:pointer;
+  text-decoration:underline;
+  font-family:'DM Sans',sans-serif;
+}
+</style>
+</head>
+<body>
+<div class="shell">
+
+  <div class="masthead">
+    <div>
+      <div class="masthead-title">英文測驗練習</div>
+      <div class="masthead-sub">由 AI 即時出題</div>
+    </div>
+    <div class="masthead-badge">
+      <span class="exam-pill pill-toeic">TOEIC</span>
+      <span class="exam-pill pill-pte">PTE</span>
+      <button class="gear-btn" onclick="openSettings()" title="設定 API Key">⚙</button>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="v-settings" class="modal-overlay" style="display:none">
+    <div class="modal-card">
+      <div class="modal-title">Anthropic API Key</div>
+      <div class="modal-desc">
+        本工具由 Claude AI 即時出題，需要你自己的 Anthropic API Key 才能運作。
+        Key 只會存在你瀏覽器的 localStorage，直接從瀏覽器呼叫 Anthropic API，不會經過任何第三方伺服器。
+        還沒有 Key 的話可以到 <a href="https://console.anthropic.com/settings/keys" target="_blank" rel="noopener">console.anthropic.com</a> 申請。
+      </div>
+      <input type="password" id="api-key-input" placeholder="sk-ant-...">
+      <div class="modal-actions">
+        <button class="btn" onclick="closeSettings()">取消</button>
+        <button class="btn btn-primary" onclick="saveSettings()">儲存</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SETUP -->
+  <div id="v-setup" class="view">
+    <div class="section-label">考試類型</div>
+    <div class="tab-row">
+      <button class="tab active" onclick="setExam('TOEIC',this)">TOEIC 多益</button>
+      <button class="tab" onclick="setExam('PTE',this)">PTE Academic</button>
+      <button class="tab" onclick="setExam('BOTH',this)">混合練習</button>
+    </div>
+
+    <div class="section-label">題目類型（可複選）</div>
+    <div class="type-grid" id="type-grid"></div>
+
+    <div class="bank-note" id="bank-note"></div>
+
+    <div class="controls-row">
+      <div class="ctrl-group">
+        <label>題數</label>
+        <select id="q-count">
+          <option value="5">5 題</option>
+          <option value="10" selected>10 題</option>
+          <option value="15">15 題</option>
+          <option value="20">20 題</option>
+        </select>
+      </div>
+      <div class="ctrl-group">
+        <label>難度</label>
+        <select id="difficulty" onchange="state.difficulty=this.value;renderBankNote()">
+          <option value="easy">基礎</option>
+          <option value="mixed" selected>混合</option>
+          <option value="hard">進階</option>
+        </select>
+      </div>
+    </div>
+
+    <div id="setup-error"></div>
+    <button class="btn btn-primary" onclick="startQuiz()">開始測驗 →</button>
+  </div>
+
+  <!-- LOADING -->
+  <div id="v-loading" class="view" style="display:none">
+    <div class="loading-wrap">
+      <div class="spinner"></div>
+      <div class="loading-text">AI 正在出題中，請稍候⋯⋯</div>
+    </div>
+  </div>
+
+  <!-- QUIZ -->
+  <div id="v-quiz" style="display:none"></div>
+
+  <!-- RESULT -->
+  <div id="v-result" style="display:none"></div>
+
+</div>
+
+<script>
+const EXAM_TYPES = {
+  TOEIC:[
+    {id:'vocab',label:'詞彙',sub:'單字填空',icon:'📝'},
+    {id:'grammar',label:'文法',sub:'句型結構',icon:'📐'},
+    {id:'reading',label:'閱讀',sub:'短文理解',icon:'📖'},
+    {id:'listening',label:'情境對話',sub:'聽力題型',icon:'🎧'}
+  ],
+  PTE:[
+    {id:'vocab',label:'詞彙',sub:'語境選字',icon:'📝'},
+    {id:'grammar',label:'文法',sub:'句子改寫',icon:'📐'},
+    {id:'reading',label:'閱讀',sub:'段落理解',icon:'📖'},
+    {id:'reorder',label:'句子排序',sub:'段落重組',icon:'🔀'}
+  ],
+  BOTH:[
+    {id:'vocab',label:'詞彙',sub:'單字運用',icon:'📝'},
+    {id:'grammar',label:'文法',sub:'句型分析',icon:'📐'},
+    {id:'reading',label:'閱讀',sub:'文章理解',icon:'📖'},
+    {id:'listening',label:'情境對話',sub:'TOEIC 聽力',icon:'🎧'},
+    {id:'reorder',label:'句子排序',sub:'PTE 重組',icon:'🔀'}
+  ]
+};
+
+const state = {
+  exam:'TOEIC',
+  types:[],
+  count:10,
+  difficulty:'mixed',
+  questions:[],
+  current:0,
+  answers:[],
+  answered:false,
+  selected:null
+};
+
+function show(id){
+  ['v-setup','v-loading','v-quiz','v-result'].forEach(v=>{
+    const el=document.getElementById(v);
+    el.style.display=v===id?'block':'none';
+    if(v===id) el.classList.add('view');
+  });
+}
+
+const API_KEY_STORAGE='anthropic_api_key';
+function getApiKey(){return localStorage.getItem(API_KEY_STORAGE)||'';}
+function openSettings(){
+  document.getElementById('api-key-input').value=getApiKey();
+  document.getElementById('v-settings').style.display='flex';
+}
+function closeSettings(){document.getElementById('v-settings').style.display='none';}
+function saveSettings(){
+  const key=document.getElementById('api-key-input').value.trim();
+  if(key) localStorage.setItem(API_KEY_STORAGE,key);
+  else localStorage.removeItem(API_KEY_STORAGE);
+  closeSettings();
+}
+
+function setExam(e,btn){
+  state.exam=e;
+  state.types=[];
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  renderTypes();
+  renderBankNote();
+}
+
+/* ---- 自建題庫（累積 AI 出過的題目，之後優先從這裡抽題） ---- */
+const BANK_STORAGE='quiz_question_bank';
+const BANK_MAX=800;
+
+function loadBank(){
+  try{ return JSON.parse(localStorage.getItem(BANK_STORAGE))||[]; }
+  catch(e){ return []; }
+}
+
+function questionKey(q){
+  return `${q.exam}|${q.type}|${(q.question||'').trim()}`;
+}
+
+function addToBank(newQuestions){
+  const bank=loadBank();
+  const seen=new Set(bank.map(questionKey));
+  newQuestions.forEach(q=>{
+    const key=questionKey(q);
+    if(!seen.has(key)){
+      bank.push(q);
+      seen.add(key);
+    }
+  });
+  const trimmed=bank.length>BANK_MAX?bank.slice(bank.length-BANK_MAX):bank;
+  localStorage.setItem(BANK_STORAGE,JSON.stringify(trimmed));
+}
+
+function clearBank(){
+  localStorage.removeItem(BANK_STORAGE);
+  renderBankNote();
+}
+
+function shuffle(arr){
+  const a=arr.slice();
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+
+function matchesSelection(q){
+  if(state.exam!=='BOTH' && q.exam!==state.exam) return false;
+  if(!state.types.includes(q.type)) return false;
+  if(state.difficulty!=='mixed' && q.difficulty!==state.difficulty) return false;
+  return true;
+}
+
+function pickFromBank(count){
+  const bank=loadBank().filter(matchesSelection);
+  return shuffle(bank).slice(0,count);
+}
+
+function renderBankNote(){
+  const el=document.getElementById('bank-note');
+  if(!el) return;
+  const bank=loadBank();
+  const matching=bank.filter(matchesSelection).length;
+  if(!bank.length){
+    el.innerHTML='題庫目前是空的，出過的題目會自動存下來，之後優先從題庫抽題（不用每次都呼叫 AI）。';
+    return;
+  }
+  el.innerHTML=`題庫已累積 ${bank.length} 題（符合目前選項 ${matching} 題）　<button onclick="clearBank()">清空題庫</button>`;
+}
+
+function renderTypes(){
+  const grid=document.getElementById('type-grid');
+  grid.innerHTML=EXAM_TYPES[state.exam].map(t=>`
+    <div class="type-card${state.types.includes(t.id)?' sel':''}" onclick="toggleType('${t.id}',this)">
+      <div class="tc-icon">${t.icon}</div>
+      <div class="tc-label">${t.label}</div>
+      <div class="tc-sub">${t.sub}</div>
+    </div>`).join('');
+}
+
+function toggleType(id,el){
+  const i=state.types.indexOf(id);
+  if(i>=0) state.types.splice(i,1);
+  else state.types.push(id);
+  el.classList.toggle('sel');
+  renderBankNote();
+}
+
+async function startQuiz(){
+  const errEl=document.getElementById('setup-error');
+  errEl.innerHTML='';
+  if(!state.types.length){
+    errEl.innerHTML='<div class="error-note">請至少選擇一種題目類型</div>';
+    return;
+  }
+  state.count=parseInt(document.getElementById('q-count').value);
+  state.difficulty=document.getElementById('difficulty').value;
+  state.questions=[];state.current=0;state.answers=[];
+  state.answered=false;state.selected=null;
+  await generateQuestions();
+}
+
+async function generateQuestions(){
+  const errEl=document.getElementById('setup-error');
+
+  const bankPicks=pickFromBank(state.count);
+  const remaining=state.count-bankPicks.length;
+
+  if(remaining<=0){
+    state.questions=shuffle(bankPicks);
+    show('v-quiz');
+    renderQuestion();
+    return;
+  }
+
+  if(!getApiKey()){
+    if(bankPicks.length){
+      errEl.innerHTML=`<div class="error-note">題庫只有 ${bankPicks.length} 題符合條件，還需要 ${remaining} 題才夠，請設定 API Key 讓 AI 補題，或減少題數。</div>`;
+    }
+    openSettings();
+    return;
+  }
+
+  show('v-loading');
+
+  const diffMap={easy:'基礎（適合初學者）',mixed:'混合（基礎到進階）',hard:'進階（高難度）'};
+  const typeNames={vocab:'詞彙填空',grammar:'文法選擇',reading:'閱讀理解',listening:'情境對話理解',reorder:'句子排序'};
+  const selNames=state.types.map(t=>typeNames[t]||t).join('、');
+  const examLabel=state.exam==='BOTH'?'TOEIC 和 PTE Academic':state.exam;
+
+  const prompt=`你是專業英文考試出題老師，請出 ${remaining} 道 ${examLabel} 英文測驗題。
+
+要求：
+- 題目類型（從這些中選）：${selNames}
+- 難度：${diffMap[state.difficulty]}
+- 每題 4 個選項（A/B/C/D）
+- 提供 1-2 句中文解析
+
+嚴格只回傳 JSON，不含任何說明或 markdown：
+{"questions":[{"exam":"TOEIC","type":"vocab","typeLabel":"詞彙","difficulty":"easy","question":"題目（空格用___）","options":["A. xxx","B. xxx","C. xxx","D. xxx"],"answer":0,"explanation":"中文解析"}]}
+
+answer 為 0-3 的正確選項索引。`;
+
+  try{
+    const apiKey=getApiKey();
+    const res=await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{
+        'Content-Type':'application/json',
+        'x-api-key':apiKey,
+        'anthropic-version':'2023-06-01',
+        'anthropic-dangerous-direct-browser-access':'true'
+      },
+      body:JSON.stringify({
+        model:'claude-sonnet-5',
+        max_tokens:4000,
+        messages:[{role:'user',content:prompt}]
+      })
+    });
+    if(!res.ok){
+      const errBody=await res.json().catch(()=>({}));
+      throw new Error(errBody?.error?.message||`API 錯誤（HTTP ${res.status}）`);
+    }
+    const data=await res.json();
+    const text=data.content.map(c=>c.type==='text'?c.text:'').join('');
+    const clean=text.replace(/```json|```/g,'').trim();
+    const parsed=JSON.parse(clean);
+    addToBank(parsed.questions);
+    state.questions=shuffle([...bankPicks,...parsed.questions]);
+    show('v-quiz');
+    renderQuestion();
+  }catch(e){
+    show('v-setup');
+    document.getElementById('setup-error').innerHTML=`<div class="error-note">出題失敗，請重試（${e.message}）</div>`;
+  }
+}
+
+function renderQuestion(){
+  const q=state.questions[state.current];
+  const total=state.questions.length;
+  const pct=Math.round(state.current/total*100);
+  const letters=['A','B','C','D'];
+  const diffLabel={easy:'基礎',mixed:'中等',hard:'進階'};
+  const qText=q.question.replace(/___/g,'<span class="blank"></span>');
+
+  document.getElementById('v-quiz').innerHTML=`
+    <div class="progress-wrap">
+      <div class="prog-meta">
+        <span>題目 ${state.current+1} / ${total}</span>
+        <span>${pct}%</span>
+      </div>
+      <div class="prog-track"><div class="prog-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="q-card">
+      <div class="q-tags">
+        <span class="q-badge ${q.exam==='PTE'?'pte':'toeic'}">${q.exam}</span>
+        <span class="q-badge type">${q.typeLabel}</span>
+        <span class="q-diff">${diffLabel[q.difficulty]||''}</span>
+      </div>
+      <div class="question">${qText}</div>
+      <div class="options" id="opts">
+        ${q.options.map((o,i)=>`
+          <div class="opt" id="opt-${i}" onclick="pick(${i})">
+            <div class="opt-letter">${letters[i]}</div>
+            <div class="opt-text">${o.replace(/^[A-D]\.\s*/,'')}</div>
+          </div>`).join('')}
+      </div>
+      <div id="expl"></div>
+    </div>
+    <div class="action-row">
+      <button class="btn" id="btn-check" onclick="checkAnswer()" style="display:none">確認答案</button>
+      <button class="btn btn-primary" id="btn-next" onclick="nextQ()" style="display:none">
+        ${state.current+1<total?'下一題 →':'查看結果'}
+      </button>
+    </div>`;
+  state.answered=false;state.selected=null;
+}
+
+function pick(i){
+  if(state.answered) return;
+  state.selected=i;
+  document.querySelectorAll('.opt').forEach((o,idx)=>o.classList.toggle('chosen',idx===i));
+  document.getElementById('btn-check').style.display='block';
+}
+
+function checkAnswer(){
+  if(state.selected===null||state.answered) return;
+  const q=state.questions[state.current];
+  state.answered=true;
+  state.answers.push(state.selected);
+  const correct=q.answer;
+  document.querySelectorAll('.opt').forEach((o,i)=>{
+    o.classList.remove('chosen');
+    o.classList.add('locked');
+    if(i===correct) o.classList.add('correct');
+    else if(i===state.selected&&state.selected!==correct) o.classList.add('wrong');
+  });
+  const ok=state.selected===correct;
+  document.getElementById('expl').innerHTML=`<div class="explanation">
+    <strong>${ok?'✓ 答對了！':'✗ 答錯了。'}</strong>&ensp;${q.explanation}
+  </div>`;
+  document.getElementById('btn-check').style.display='none';
+  document.getElementById('btn-next').style.display='block';
+}
+
+function nextQ(){
+  if(!state.answered) return;
+  state.current++;
+  if(state.current>=state.questions.length) showResult();
+  else renderQuestion();
+}
+
+function showResult(){
+  const total=state.questions.length;
+  const correct=state.answers.filter((a,i)=>a===state.questions[i].answer).length;
+  const pct=Math.round(correct/total*100);
+  const verdict=pct>=80?'表現優秀 🎉':pct>=60?'表現良好 👍':'繼續加油 💪';
+
+  const byExam={};
+  state.questions.forEach((q,i)=>{
+    if(!byExam[q.exam]) byExam[q.exam]={c:0,t:0};
+    byExam[q.exam].t++;
+    if(state.answers[i]===q.answer) byExam[q.exam].c++;
+  });
+  const examRows=Object.entries(byExam).map(([e,v])=>
+    `<div class="result-metric"><div class="rv">${v.c}/${v.t}</div><div class="rk">${e}</div></div>`
+  ).join('');
+
+  show('v-result');
+  document.getElementById('v-result').innerHTML=`
+    <div class="result-card">
+      <div class="result-score-wrap">
+        <div class="result-pct">${pct}<span>%</span></div>
+        <div class="result-verdict">${correct} / ${total} 題正確 · ${verdict}</div>
+      </div>
+      <div class="result-grid">
+        ${examRows}
+        <div class="result-metric"><div class="rv">${total-correct}</div><div class="rk">答錯</div></div>
+      </div>
+      <div class="result-actions">
+        <button class="btn" onclick="restartSame()">再練一次</button>
+        <button class="btn btn-primary" onclick="backSetup()">重新設定</button>
+      </div>
+    </div>`;
+}
+
+function restartSame(){
+  state.current=0;state.answers=[];state.answered=false;state.selected=null;
+  generateQuestions();
+}
+
+function backSetup(){
+  show('v-setup');
+  renderBankNote();
+}
+
+renderTypes();
+renderBankNote();
+</script>
+</body>
+</html>
