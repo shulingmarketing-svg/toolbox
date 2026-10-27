@@ -165,6 +165,11 @@ td .sub{font-size:12px;color:var(--muted);margin-top:3px}
 .pp-track i{display:block;height:100%;border-radius:5px}
 .pp-pct{width:40px;text-align:right;font-variant-numeric:tabular-nums}
 .pp-amt{width:78px;text-align:right;color:var(--muted);font-variant-numeric:tabular-nums}
+.pp-in{width:58px;text-align:right;padding:3px 6px;font-size:12.5px;border:1px solid var(--line);border-radius:6px;font-family:inherit;background:#fff}
+.pp-in:focus{outline:2px solid var(--ink);outline-offset:-1px}
+.pp-in.wide{width:110px}
+.dec{align-items:flex-start}
+.dec>.del-x{margin-left:auto;flex-shrink:0}
 
 /* 決策紀錄 */
 .dec-line{border-left:2px solid var(--line);padding-left:0;margin-left:8px}
@@ -1300,46 +1305,177 @@ function projPL(){
   </div>
 
   <div class="panel">
+    <div class="panel-head"><h3>專案支出</h3>
+      <span class="hint">廣告費、按件外包、素材採購——會算進該專案的直接成本</span></div>
+    <div class="grid4" style="align-items:end">
+      <div class="field"><label>品牌</label><select id="pc_client">
+        ${d.clients.map(c=>`<option value="${c.id}">${esc(c.brand_name)}</option>`).join('')}</select></div>
+      <div class="field"><label>類型</label><select id="pc_type">
+        <option>廣告費</option><option>按件外包</option><option>素材採購</option><option>其他</option></select></div>
+      <div class="field"><label>金額</label><input id="pc_amt" type="number" min="0" value="0"></div>
+      <div class="field"><label>日期</label><input id="pc_date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>備註</label><input id="pc_note" placeholder="例如：Meta 年節禮盒預熱"></div>
+    <button class="btn" style="margin-top:12px" onclick="addCost()">記一筆支出</button>
+
+    ${d.projectCosts.length?`<table class="tbl" style="margin-top:16px">
+      <thead><tr><th>日期</th><th>品牌</th><th>類型</th><th>備註</th><th class="num">金額</th><th></th></tr></thead><tbody>
+      ${d.projectCosts.slice().sort((a,b)=>(b.occurred_on||'').localeCompare(a.occurred_on||'')).map(c=>{
+        const cl = d.clients.find(x=>x.id===c.client_id)||{};
+        return `<tr><td>${esc(c.occurred_on||'')}</td>
+          <td><b style="color:${cl.color||''}">${esc(cl.brand_name||'')}</b></td>
+          <td>${esc(c.cost_type)}</td><td style="color:var(--muted)">${esc(c.note||'')}</td>
+          <td class="num">${fmt(c.amount)}</td>
+          <td><button class="del-x" onclick="delCost('${c.id}')">✕</button></td></tr>`;}).join('')}
+    </tbody></table>`:''}
+  </div>
+
+  <div class="panel">
     <div class="panel-head"><h3>營運固定開銷</h3>
       <span class="hint">不屬於任何單一專案，但確實花掉了｜分攤方式：${esc(d.opex.method)}</span></div>
     <table class="tbl"><tbody>
-      ${d.opex.items.map(i=>`<tr><td>${esc(i.name)}</td><td class="num">${fmt(i.amount)}</td></tr>`).join('')}
-      <tr class="tot"><td><b>每月合計</b></td><td class="num"><b>${fmt(opexTotal())}</b></td></tr>
+      ${d.opex.items.map((i,ix)=>`<tr><td>${esc(i.name)}</td>
+        <td class="num"><input class="pp-in wide" type="number" min="0" value="${i.amount}"
+          onchange="state.data.opex.items[${ix}].amount=+this.value||0;render()"></td>
+        <td style="width:40px"><button class="del-x" onclick="state.data.opex.items.splice(${ix},1);render()">✕</button></td></tr>`).join('')}
+      <tr class="tot"><td><b>每月合計</b></td><td class="num"><b>${fmt(opexTotal())}</b></td><td></td></tr>
     </tbody></table>
+    <div class="grid2" style="align-items:end;margin-top:12px">
+      <div class="field"><label>新增開銷項目</label><input id="ox_name" placeholder="例如：辦公室租金"></div>
+      <div class="field"><label>每月金額</label><input id="ox_amt" type="number" min="0" value="0"></div>
+    </div>
+    <button class="btn" style="margin-top:10px" onclick="addOpex()">新增開銷</button>
     <p class="hint" style="margin-top:10px">⚠️ 尚未包含稅。實際落袋金額會再低一些。</p>
   </div>`;
 }
 
-/* --- 分頁三：人員 --- */
+function addCost(){
+  const amt = +$('#pc_amt').value||0;
+  if(amt<=0) return toast('請填金額');
+  state.data.projectCosts.push({
+    id:'pc-'+Date.now().toString(36), client_id:$('#pc_client').value,
+    cost_type:$('#pc_type').value, amount:amt,
+    occurred_on:$('#pc_date').value, note:$('#pc_note').value.trim()
+  });
+  toast('已記錄支出 '+fmt(amt));
+  render();
+}
+function delCost(id){
+  state.data.projectCosts = state.data.projectCosts.filter(c=>c.id!==id);
+  toast('已刪除該筆支出'); render();
+}
+function addOpex(){
+  const name = $('#ox_name').value.trim(), amt = +$('#ox_amt').value||0;
+  if(!name) return toast('請填項目名稱');
+  state.data.opex.items.push({name, amount:amt});
+  toast('已新增開銷：'+name); render();
+}
+
+/* --- 分頁三：人員（可新增、可直接改分攤）--- */
+const ROLES = ['美編','文案','剪輯','廣告','攝影','其他'];
+
 function projPeople(){
   const d = state.data;
   return `
   <div class="panel">
+    <div class="panel-head"><h3>新增人員</h3>
+      <span class="hint">月費制填每月費用；按件制不用填，費用記在損益頁的「專案支出」</span></div>
+    <div class="grid4" style="align-items:end">
+      <div class="field"><label>姓名</label><input id="sf_name" placeholder="例如：小美"></div>
+      <div class="field"><label>職務</label><select id="sf_role">${ROLES.map(r=>`<option>${r}</option>`).join('')}</select></div>
+      <div class="field"><label>計費方式</label>
+        <select id="sf_type" onchange="$('#sf_cost').disabled = this.value!=='月費'">
+          <option>月費</option><option>按件</option></select></div>
+      <div class="field"><label>每月費用</label><input id="sf_cost" type="number" value="0" min="0"></div>
+    </div>
+    <button class="btn" style="margin-top:12px" onclick="addStaff()">新增人員</button>
+  </div>
+
+  <div class="panel">
     <div class="panel-head"><h3>人員與分攤</h3>
-      <span class="hint">分攤用「幾成」不用工時——決策需要的精度就這麼粗</span></div>
-    ${d.staff.map(s=>{
-      const al = d.projectStaff.filter(p=>p.staff_id===s.id);
-      const tot = al.reduce((a,b)=>a+b.allocation_pct,0);
+      <span class="hint">直接改右邊的百分比，按 Enter 或點別處就重算｜填 0 等於不參與該專案</span></div>
+    ${d.staff.length ? d.staff.map(s=>{
+      const al   = d.projectStaff.filter(p=>p.staff_id===s.id);
+      const tot  = al.reduce((a,b)=>a+b.allocation_pct,0);
+      const isM  = s.cost_type==='月費';
+      const warn = !isM ? '' : tot>100?' ⚠ 超載' : tot<100?` ⚠ 未分配 ${100-tot}%` : ' ✓';
+      const tone = !isM ? 'txt-green' : tot>100?'txt-red' : tot<100?'txt-yellow' : 'txt-green';
       return `<div class="pp-row">
         <div class="pp-head">
           <b>${esc(s.name)}</b><span class="tag">${esc(s.role)}</span>
-          <span class="pp-cost">${s.cost_type==='月費'?`月費 ${fmt(s.monthly_cost)}`:'按件計酬'}</span>
-          <span class="pp-tot ${tot>100?'txt-red':tot<100&&s.cost_type==='月費'?'txt-yellow':'txt-green'}">
-            合計 ${tot}%${tot>100?' ⚠ 超載':tot<100&&s.cost_type==='月費'?` ⚠ 未分配 ${100-tot}%`:' ✓'}</span>
+          <span class="pp-cost">${isM?`月費 ${fmt(s.monthly_cost)}`:'按件計酬'}</span>
+          <span class="pp-tot ${tone}">合計 ${tot}%${warn}</span>
+          <button class="del-x" onclick="delStaff('${s.id}')">✕ 移除</button>
         </div>
         <div class="pp-bars">
-        ${al.length?al.map(p=>{
-          const cl = d.clients.find(c=>c.id===p.client_id)||{};
+        ${d.clients.map(cl=>{
+          const row = al.find(p=>p.client_id===cl.id);
+          const pct = row ? row.allocation_pct : 0;
           return `<div class="pp-bar">
             <span class="pp-name">${esc(cl.brand_name||'')}</span>
-            <span class="pp-track"><i style="width:${p.allocation_pct}%;background:${cl.color||'var(--ink)'}"></i></span>
-            <span class="pp-pct">${p.allocation_pct}%</span>
-            <span class="pp-amt">${s.cost_type==='月費'?fmt(Math.round(s.monthly_cost*p.allocation_pct/100)):'—'}</span>
-          </div>`;}).join(''):'<div class="kempty">尚未分配到任何專案</div>'}
+            <span class="pp-track"><i style="width:${pct}%;background:${cl.color||'var(--ink)'}"></i></span>
+            <input class="pp-in" type="number" min="0" max="100" value="${pct}"
+                   onchange="setAlloc('${s.id}','${cl.id}',this.value)">
+            <span class="pp-amt">${isM&&pct?fmt(Math.round(s.monthly_cost*pct/100)):'—'}</span>
+          </div>`;}).join('')}
         </div>
-      </div>`;}).join('')}
+      </div>`;}).join('') : '<div class="kempty">還沒有人員，從上面新增</div>'}
     <p class="hint" style="margin-top:12px">合計不到 100% 表示有產能沒被算進任何專案，或是忘了填。</p>
+  </div>
+
+  <div class="panel">
+    <div class="panel-head"><h3>我的時薪基準</h3>
+      <span class="hint">用來換算投入時間的機會成本，不是真的會付這筆錢</span></div>
+    <div class="grid4" style="align-items:end">
+      <div class="field"><label>每小時</label>
+        <input type="number" min="0" value="${d.settings.owner_rate}"
+               onchange="state.data.settings.owner_rate=+this.value||0;render();toast('已更新時薪基準')"></div>
+      ${d.clients.map(cl=>{
+        const h = (d.ownerHours.find(x=>x.client_id===cl.id)||{}).hours||0;
+        return `<div class="field"><label>${esc(cl.brand_name)}　本月投入時數</label>
+          <input type="number" min="0" step="0.5" value="${h}"
+                 onchange="setOwnerHours('${cl.id}',this.value)"></div>`;}).join('')}
+    </div>
   </div>`;
+}
+
+function addStaff(){
+  const name = $('#sf_name').value.trim();
+  if(!name) return toast('請填姓名');
+  const cost_type = $('#sf_type').value;
+  state.data.staff.push({
+    id:'s-'+Date.now().toString(36), name, role:$('#sf_role').value, cost_type,
+    monthly_cost: cost_type==='月費' ? (+$('#sf_cost').value||0) : 0, status:'合作中'
+  });
+  toast('已新增人員：'+name);
+  render();
+}
+
+/* 填 0 就把那筆分攤刪掉，不要留一堆 0% 的空列 */
+function setAlloc(staffId, clientId, val){
+  const pct = Math.max(0, Math.min(100, Math.round(+val||0)));
+  const ps = state.data.projectStaff;
+  const i  = ps.findIndex(p=>p.staff_id===staffId && p.client_id===clientId);
+  if(pct===0){ if(i>=0) ps.splice(i,1); }
+  else if(i>=0){ ps[i].allocation_pct = pct; }
+  else ps.push({id:'ps-'+Date.now().toString(36), client_id:clientId, staff_id:staffId, allocation_pct:pct});
+  render();
+}
+
+function delStaff(id){
+  const d = state.data, s = d.staff.find(x=>x.id===id);
+  d.staff = d.staff.filter(x=>x.id!==id);
+  d.projectStaff = d.projectStaff.filter(p=>p.staff_id!==id);
+  d.content.forEach(c=>{ if(c.staff_id===id) c.staff_id = null; });
+  toast('已移除：'+(s?s.name:''));
+  render();
+}
+
+function setOwnerHours(cid, val){
+  const h = Math.max(0, +val||0), d = state.data;
+  const row = d.ownerHours.find(x=>x.client_id===cid);
+  if(row) row.hours = h; else d.ownerHours.push({id:'oh-'+Date.now().toString(36), client_id:cid, hours:h});
+  render();
 }
 
 /* --- 分頁四：決策紀錄 --- */
@@ -1347,6 +1483,25 @@ function projDecision(){
   const d = state.data;
   const list = d.decisions.slice().sort((a,b)=>b.decided_on.localeCompare(a.decided_on));
   return `
+  <div class="panel">
+    <div class="panel-head"><h3>記一筆決策</h3>
+      <span class="hint">「為什麼」和「誰決定」是必填——少了這兩欄，這頁就退化成待辦清單</span></div>
+    <div class="grid2" style="align-items:end">
+      <div class="field"><label>品牌</label><select id="dc_client">
+        ${d.clients.map(c=>`<option value="${c.id}">${esc(c.brand_name)}</option>`).join('')}</select></div>
+      <div class="field"><label>日期</label><input id="dc_date" type="date" value="${new Date().toISOString().slice(0,10)}"></div>
+    </div>
+    <div class="field" style="margin-top:10px"><label>決定了什麼</label>
+      <input id="dc_what" placeholder="例如：禮盒改用牛皮紙，不用塑膠內襯"></div>
+    <div class="field" style="margin-top:10px"><label>為什麼　＊必填</label>
+      <input id="dc_why" placeholder="例如：客戶要主打環保，塑膠殼與品牌訴求衝突"></div>
+    <div class="grid2" style="align-items:end;margin-top:10px">
+      <div class="field"><label>誰決定　＊必填</label><input id="dc_who" placeholder="例如：客戶 王經理 ／ 我"></div>
+      <div class="field"><label>影響到什麼</label><input id="dc_impact" placeholder="例如：主視覺要重拍，延一週"></div>
+    </div>
+    <button class="btn" style="margin-top:12px" onclick="addDecision()">記錄</button>
+  </div>
+
   <div class="panel">
     <div class="panel-head"><h3>決策紀錄</h3>
       <span class="hint">「上次為什麼換照片」「這個誰說可以的」——缺的就是「為什麼」和「誰決定」</span></div>
@@ -1362,9 +1517,29 @@ function projDecision(){
           <div class="dec-why"><span class="dec-k">誰決定</span>${esc(x.decided_by)}</div>
           ${x.impact?`<div class="dec-why"><span class="dec-k">影響</span>${esc(x.impact)}</div>`:''}
         </div>
+        <button class="del-x" onclick="delDecision('${x.id}')">✕</button>
       </div>`;}).join('')}
     </div>
   </div>`;
+}
+
+function addDecision(){
+  const what = $('#dc_what').value.trim(), why = $('#dc_why').value.trim(), who = $('#dc_who').value.trim();
+  if(!what) return toast('請填「決定了什麼」');
+  if(!why)  return toast('「為什麼」必填——少了它，三個月後你會想不起來');
+  if(!who)  return toast('「誰決定」必填——這是日後最常被問的那一欄');
+  state.data.decisions.push({
+    id:'dc-'+Date.now().toString(36), client_id:$('#dc_client').value,
+    decided_on:$('#dc_date').value, decision:what, reason:why,
+    decided_by:who, impact:$('#dc_impact').value.trim()
+  });
+  toast('已記錄決策');
+  render();
+}
+
+function delDecision(id){
+  state.data.decisions = state.data.decisions.filter(x=>x.id!==id);
+  toast('已刪除該筆決策'); render();
 }
 
 /* =====================================================
